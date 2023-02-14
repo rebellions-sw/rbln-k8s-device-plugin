@@ -18,6 +18,7 @@ import (
 	"github.com/jaypipes/ghw"
 
 	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
+	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/infoprovider"
 	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
 )
 
@@ -30,7 +31,12 @@ type accelDevice struct {
 // NewAccelDevice returns an instance of AccelDevice interface
 func NewAccelDevice(dev *ghw.PCIDevice, rFactory types.ResourceFactory,
 	rc *types.ResourceConfig) (types.AccelDevice, error) {
-	hostDev, err := devices.NewHostDeviceImpl(dev, dev.Address, rFactory, rc, nil)
+	infoProviders := make([]types.DeviceInfoProvider, 0)
+	if dev.Vendor.ID == "1eff" {
+		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Product.ID))
+	}
+	
+	hostDev, err := devices.NewHostDeviceImpl(dev, dev.Address, rFactory, rc, infoProviders)
 	if err != nil {
 		return nil, err
 	}
