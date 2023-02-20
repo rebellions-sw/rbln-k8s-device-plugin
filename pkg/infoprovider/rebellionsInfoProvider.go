@@ -2,20 +2,41 @@ package infoprovider
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
+	"github.com/golang/glog"
 	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
 )
 
+const (
+	SysfsDriverPools = "/sys/bus/pci/drivers/rebellions/%s/pools"
+	CharDeviceNode   = "/dev/%s"
+)
+
 type rebellionsInfoProvider struct {
-	deviceID uint8
+	deviceID string
 }
 
 // NewRebellionsInfoProvider instantiate a generic DeviceInfoProvider
 func NewRebellionsInfoProvider(pciBusID string) types.DeviceInfoProvider {
-	// TODO(hjkim): get deviceID from pciBusID
-	deviceID := uint8(0)
+	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciBusID)
+	poolsFile, err := ioutil.ReadFile(poolsFilePath)
+	if err != nil {
+		glog.Errorf("[NewRebellionsInfoProvider] Failed to read %s: %s", poolsFilePath, err.Error())
+		return nil
+	}
+
+	// `pools` file has contents as below
+	// =====================================
+	// poolinfo - 0.1
+	// rl0                 0    4 1024  1
+	// =====================================
+	// so we take a second line and take the first one among words split by spaces
+	deviceID := strings.Split(strings.Split(string(poolsFile), "\n")[1], " ")[0]
+
 	return &rebellionsInfoProvider{
 		deviceID: deviceID,
 	}
@@ -23,7 +44,7 @@ func NewRebellionsInfoProvider(pciBusID string) types.DeviceInfoProvider {
 
 func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	devSpecs := make([]*pluginapi.DeviceSpec, 0)
-	devicePath := fmt.Sprintf("/dev/rl%d", rp.deviceID)
+	devicePath := fmt.Sprintf(CharDeviceNode, rp.deviceID)
 	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 		HostPath:      devicePath,
 		ContainerPath: devicePath,
