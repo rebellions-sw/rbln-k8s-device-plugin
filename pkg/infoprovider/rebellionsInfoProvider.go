@@ -21,11 +21,11 @@ type rebellionsInfoProvider struct {
 }
 
 // NewRebellionsInfoProvider instantiate a generic DeviceInfoProvider
-func NewRebellionsInfoProvider(pciBusID string) types.DeviceInfoProvider {
-	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciBusID)
+func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
+	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciAddress)
 	poolsFile, err := ioutil.ReadFile(poolsFilePath)
 	if err != nil {
-		glog.Errorf("[NewRebellionsInfoProvider] Failed to read %s: %s", poolsFilePath, err.Error())
+		glog.Errorf("NewRebellionsInfoProvider(): Failed to read %s: %s", poolsFilePath, err.Error())
 		return nil
 	}
 
@@ -36,6 +36,7 @@ func NewRebellionsInfoProvider(pciBusID string) types.DeviceInfoProvider {
 	// =====================================
 	// so we take a second line and take the first one among words split by spaces
 	deviceID := strings.Split(strings.Split(string(poolsFile), "\n")[1], " ")[0]
+	glog.Infof("NewRebellionsInfoProvider(): PCI Address: %s, Device ID: %s", pciAddress, deviceID)
 
 	return &rebellionsInfoProvider{
 		deviceID: deviceID,

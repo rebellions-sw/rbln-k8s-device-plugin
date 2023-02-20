@@ -33,9 +33,9 @@ func NewAccelDevice(dev *ghw.PCIDevice, rFactory types.ResourceFactory,
 	rc *types.ResourceConfig) (types.AccelDevice, error) {
 	infoProviders := make([]types.DeviceInfoProvider, 0)
 	if dev.Vendor.ID == "1eff" {
-		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Product.ID))
+		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Address))
 	}
-	
+
 	hostDev, err := devices.NewHostDeviceImpl(dev, dev.Address, rFactory, rc, infoProviders)
 	if err != nil {
 		return nil, err
