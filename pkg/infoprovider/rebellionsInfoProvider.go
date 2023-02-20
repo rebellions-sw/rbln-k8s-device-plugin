@@ -20,7 +20,6 @@ type rebellionsInfoProvider struct {
 	deviceID string
 }
 
-// NewRebellionsInfoProvider instantiate a generic DeviceInfoProvider
 func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
 	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciAddress)
 	poolsFile, err := ioutil.ReadFile(poolsFilePath)
