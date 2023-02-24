@@ -15,8 +15,6 @@
 package accelerator
 
 import (
-	"fmt"
-
 	"github.com/golang/glog"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -46,20 +44,11 @@ func (rp *accelResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.Dev
 
 	devicePool := rp.GetDevicePool()
 
-	// to make Rebellions character device nodes always start from /dev/rl0
-	numRebelDevices := 0
-
 	// Add device driver specific devices
 	for _, id := range deviceIDs {
 		if dev, ok := devicePool[id]; ok {
 			newSpecs := dev.GetDeviceSpecs()
 			for _, ds := range newSpecs {
-				// set order of container paths when device vendor is Rebellions
-				if dev.GetVendor() == "1eff" {
-					ds.ContainerPath = fmt.Sprintf("/dev/rl%d", numRebelDevices)
-					numRebelDevices++
-				}
-
 				if !rp.DeviceSpecExist(devSpecs, ds) {
 					devSpecs = append(devSpecs, ds)
 				}
