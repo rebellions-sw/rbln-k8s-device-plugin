@@ -42,9 +42,17 @@ func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
 	}
 }
 
+func GetDevicePath(deviceID string) string {
+	return fmt.Sprintf(CharDeviceNode, deviceID)
+}
+
+func (rp *rebellionsInfoProvider) GetName() string {
+	return "rebellions"
+}
+
 func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	devSpecs := make([]*pluginapi.DeviceSpec, 0)
-	devicePath := fmt.Sprintf(CharDeviceNode, rp.deviceID)
+	devicePath := GetDevicePath(rp.deviceID)
 	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 		HostPath:      devicePath,
 		ContainerPath: devicePath,
@@ -53,8 +61,11 @@ func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	return devSpecs
 }
 
-func (rp *rebellionsInfoProvider) GetEnvVal() string {
-	return ""
+func (rp *rebellionsInfoProvider) GetEnvVal() types.AdditionalInfo {
+	envs := make(map[string]string, 0)
+	// @oceanjoon: this env is not actually used, but added to align with another info providers
+	envs["mount"] = GetDevicePath(rp.deviceID)
+	return envs
 }
 
 func (rp *rebellionsInfoProvider) GetMounts() []*pluginapi.Mount {
