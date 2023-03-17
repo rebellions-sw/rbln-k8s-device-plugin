@@ -31,7 +31,7 @@ func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
 	// `pools` file has contents as below
 	// =====================================
 	// poolinfo - 0.1
-	// rl0                 0    4 1024  1
+	// rbln0               0    4 1024  1
 	// =====================================
 	// so we take a second line and take the first one among words split by spaces
 	deviceID := strings.Split(strings.Split(string(poolsFile), "\n")[1], " ")[0]
