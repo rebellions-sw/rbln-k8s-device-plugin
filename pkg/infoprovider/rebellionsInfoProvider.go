@@ -3,6 +3,7 @@ package infoprovider
 import (
 	"fmt"
 	"io/ioutil"
+	"os/exec"
 	"strings"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -70,5 +71,15 @@ func (rp *rebellionsInfoProvider) GetEnvVal() types.AdditionalInfo {
 
 func (rp *rebellionsInfoProvider) GetMounts() []*pluginapi.Mount {
 	mounts := make([]*pluginapi.Mount, 0)
+	rblnStatPath, err := exec.LookPath("rbln-stat")
+	if err != nil {
+		glog.Warning("rbln-stat not found")
+		return mounts
+	}
+	mounts = append(mounts, &pluginapi.Mount{
+		HostPath:		rblnStatPath,
+		ContainerPath:  "/usr/bin/rbln-stat",
+		ReadOnly: 		true,	
+	})
 	return mounts
 }
