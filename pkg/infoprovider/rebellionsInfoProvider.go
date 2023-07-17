@@ -2,7 +2,7 @@ package infoprovider
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -11,6 +11,7 @@ import (
 	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
 )
 
+// constants used by rebellions info provider
 const (
 	SysfsDriverPools = "/sys/bus/pci/drivers/rebellions/%s/pools"
 	CharDeviceNode   = "/dev/%s"
@@ -20,9 +21,10 @@ type rebellionsInfoProvider struct {
 	deviceID string
 }
 
+// NewRebellionsInfoProvider returns a new Rebellions Information Provider
 func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
 	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciAddress)
-	poolsFile, err := ioutil.ReadFile(poolsFilePath)
+	poolsFile, err := os.ReadFile(poolsFilePath)
 	if err != nil {
 		glog.Errorf("NewRebellionsInfoProvider(): Failed to read %s: %s", poolsFilePath, err.Error())
 		return nil
@@ -42,7 +44,7 @@ func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
 	}
 }
 
-func GetDevicePath(deviceID string) string {
+func _GetDevicePath(deviceID string) string {
 	return fmt.Sprintf(CharDeviceNode, deviceID)
 }
 
@@ -52,7 +54,7 @@ func (rp *rebellionsInfoProvider) GetName() string {
 
 func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	devSpecs := make([]*pluginapi.DeviceSpec, 0)
-	devicePath := GetDevicePath(rp.deviceID)
+	devicePath := _GetDevicePath(rp.deviceID)
 	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 		HostPath:      devicePath,
 		ContainerPath: devicePath,
@@ -64,16 +66,16 @@ func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 func (rp *rebellionsInfoProvider) GetEnvVal() types.AdditionalInfo {
 	envs := make(map[string]string, 0)
 	// @oceanjoon: this env is not actually used, but added to align with another info providers
-	envs["mount"] = GetDevicePath(rp.deviceID)
+	envs["mount"] = _GetDevicePath(rp.deviceID)
 	return envs
 }
 
 func (rp *rebellionsInfoProvider) GetMounts() []*pluginapi.Mount {
 	mounts := make([]*pluginapi.Mount, 0)
 	mounts = append(mounts, &pluginapi.Mount{
-		HostPath:	"/usr/local/bin/rbln-stat",
-		ContainerPath:  "/usr/bin/rbln-stat",
-		ReadOnly:	true,
+		HostPath:      "/usr/local/bin/rbln-stat",
+		ContainerPath: "/usr/bin/rbln-stat",
+		ReadOnly:      true,
 	})
 	return mounts
 }
