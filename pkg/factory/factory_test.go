@@ -19,12 +19,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/factory"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/resources"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

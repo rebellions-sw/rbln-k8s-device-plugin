@@ -18,10 +18,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/jaypipes/ghw"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 )
 
 // pciNetDevice extends HostDevice and embedds GenPciDevice and GenNetDevice

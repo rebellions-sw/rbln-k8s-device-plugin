@@ -22,8 +22,8 @@ import (
 	nettypes "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/resources"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
 )
 
 type netResourcePool struct {

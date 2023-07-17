@@ -24,11 +24,11 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/factory"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 )
 
 var _ = Describe("HostDevice", func() {

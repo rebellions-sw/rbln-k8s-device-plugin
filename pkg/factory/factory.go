@@ -20,13 +20,13 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/accelerator"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/auxnetdevice"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/resources"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/auxnetdevice"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
 )
 
 type resourceFactory struct {

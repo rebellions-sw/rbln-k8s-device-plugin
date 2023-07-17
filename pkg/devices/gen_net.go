@@ -22,8 +22,8 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 )
 
 // GenNetDevice is a generic network device embedded into top level devices

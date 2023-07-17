@@ -20,9 +20,9 @@ package devices
 import (
 	"github.com/jaypipes/ghw"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 )
 
 // HostDeviceImpl is an implementation of HostDevice interface
