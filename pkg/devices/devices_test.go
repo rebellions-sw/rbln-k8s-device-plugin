@@ -26,10 +26,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	nl "github.com/vishvananda/netlink"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("Devices", func() {

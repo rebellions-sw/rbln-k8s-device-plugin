@@ -16,7 +16,7 @@ GOMOCKERY = $(GOBIN)/mockery
 # Package info
 BINARY_NAME=sriovdp
 PACKAGE=sriov-network-device-plugin
-ORG_PATH=github.com/k8snetworkplumbingwg
+ORG_PATH=github.com/rebellions-sw
 # Build info
 BUILDDIR=$(CURDIR)/build
 REPO_PATH=$(ORG_PATH)/$(PACKAGE)
@@ -32,7 +32,7 @@ COVERAGE_XML = $(COVERAGE_DIR)/coverage.xml
 COVERAGE_HTML = $(COVERAGE_DIR)/index.html
 # Docker image
 DOCKERFILE?=$(CURDIR)/images/Dockerfile
-TAG?=ghcr.io/k8snetworkplumbingwg/sriov-network-device-plugin
+TAG?=rebellions/k8s-device-plugin
 # Docker arguments - To pass proxy for Docker invoke it as 'make image HTTP_POXY=http://192.168.0.1:8080'
 DOCKERARGS=
 ifdef HTTP_PROXY

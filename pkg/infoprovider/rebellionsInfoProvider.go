@@ -8,7 +8,8 @@ import (
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
 	"github.com/golang/glog"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
+
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
 )
 
 // constants used by rebellions info provider

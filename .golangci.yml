@@ -47,7 +47,7 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   goimports:
-    local-prefixes: github.com/k8snetworkplumbingwg/sriov-network-device-plugin
+    local-prefixes: github.com/rebellions-sw/sriov-network-device-plugin
   gomnd:
     settings:
       mnd:

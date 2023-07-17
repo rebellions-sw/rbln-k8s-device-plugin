@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
 )
 
 const (

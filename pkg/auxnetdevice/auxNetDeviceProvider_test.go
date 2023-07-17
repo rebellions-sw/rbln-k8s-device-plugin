@@ -26,12 +26,12 @@ import (
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/auxnetdevice"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/factory"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	tmocks "github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/auxnetdevice"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	tmocks "github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("AuxNetDeviceProvider", func() {

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	nl "github.com/vishvananda/netlink"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
 )
 
 // FakeFilesystem allows to setup isolated fake files structure used for the tests.

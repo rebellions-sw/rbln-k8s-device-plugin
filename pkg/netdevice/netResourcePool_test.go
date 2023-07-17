@@ -20,10 +20,10 @@ import (
 	nettypes "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/factory"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

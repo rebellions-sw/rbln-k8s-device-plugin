@@ -1,9 +1,9 @@
 package resources_test
 
 import (
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/resources"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

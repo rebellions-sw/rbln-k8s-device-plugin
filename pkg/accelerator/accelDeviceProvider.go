@@ -20,8 +20,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/jaypipes/ghw"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
 )
 
 type accelDeviceProvider struct {

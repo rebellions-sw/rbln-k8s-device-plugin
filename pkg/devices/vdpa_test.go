@@ -24,10 +24,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/devices"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/types"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils"
-	"github.com/k8snetworkplumbingwg/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
 )
 
 type fakeKvdpaDevice struct {
