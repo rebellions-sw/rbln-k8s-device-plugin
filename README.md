@@ -1,3 +1,45 @@
+# Rebellions Kubernetes Device Plugin
+
+[![build-test-lint](https://github.com/rebellions-sw/sriov-network-device-plugin/actions/workflows/build-test-lint.yml/badge.svg)](https://github.com/rebellions-sw/sriov-network-device-plugin/actions/workflows/build-test-lint.yml)
+[![CodeQL](https://github.com/rebellions-sw/sriov-network-device-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/rebellions-sw/sriov-network-device-plugin/actions/workflows/codeql.yml)
+![Docker Pulls](https://img.shields.io/docker/v/rebellions/k8s-device-plugin/latest)
+
+This repository contains Kubernetes device plugin implementation to support Rebellions NPU devices (e.g. ATOM) on Kubernetes cluster environment.
+
+## Quickstart
+
+Assuming your nodes have Rebellions NPU devices equipped and Rebellions driver installed correctly, running these commands will execute a device plugin DaemonSet pod for each node.
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/sriov-network-device-plugin/master/deployments/configMap.yaml
+
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/sriov-network-device-plugin/master/deployments/sriovdp-daemonset.yaml
+```
+
+Verify that the installed DaemonSet is running properly.
+```bash
+$ kubectl get pod -n kube-system -l name=rebel-sriov-device-plugin
+NAME                              READY   STATUS    RESTARTS      AGE
+rebel-sriov-device-plugin-24rwg   1/1     Running   0             11d
+rebel-sriov-device-plugin-f5l7w   1/1     Running   0             11d
+rebel-sriov-device-plugin-ms9n9   1/1     Running   0             11d
+rebel-sriov-device-plugin-svqd9   1/1     Running   0             11d
+```
+
+By describing nodes having Rebellions NPUs (ATOM for example), you can see the resource amed `rebellions.ai/ATOM`.
+```bash
+$ kubectl descirbe node <your-node-name>
+...
+Capacity:
+  ...
+  rebellions.ai/ATOM:  1
+Allocatable:
+  ...
+  rebellions.ai/ATOM:  1
+...
+```
+
+---
 
 # SR-IOV Network Device Plugin for Kubernetes
 
