@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rebel-device-plugin-testpod
+spec:
+  containers:
+    - name: ubuntu
+      image: ubuntu:latest
+      imagePullPolicy: IfNotPresent
+      command: ["/bin/bash", "-c", "--"]
+      args: ["while true; do sleep 300000; done;"]
+      resources:
+        requests:
+          rebellions.ai/ATOM: 1
+        limits:
+          rebellions.ai/ATOM: 1
