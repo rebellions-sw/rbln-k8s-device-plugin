@@ -41,7 +41,31 @@ Allocatable:
 
 Create a test pod to verify it's scheduled and running successfully.
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-device-plugin/master/deployments/rebel/pod-tc.yaml
+$ kubectl create -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-device-plugin/master/deployments/rebel/pod-tc.yaml
+
+$ kubectl get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+rebel-device-plugin-testpod   1/1     Running   0          6s
+```
+
+The device plugin automatically mounts `rbln-stat` utility (installed together with Rebellions driver) from host machine to pod container, so you can check it by attaching to the pod.
+```bash
+$ kubectl exec -it rebel-device-plugin-testpod -- bash
+root@rebel-device-plugin-testpod:/# rbln-stat
++-------------------------------------------------------------------------------------------------+
+|                        Device Infomation KMD ver: 0.8.44-15d5afc-release                        |
++-----+--------+---------------+------+---------------------------------------------------+-------+
+| NPU | Device |   PCI BUS ID  | Temp |                 Memory(used/total)                |  Util |
++-----+--------+---------------+------+---------------------------------------------------+-------+
+| 0   | rbln0  |  0000:51:00.0 |  48C |                   0.0B / 15.7GiB                  |   0.0 |
++-----+--------+---------------+------+---------------------------------------------------+-------+
++-------------------------------------------------------------------------------------------------+
+|                                        Context Infomation                                       |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
+| NPU | Process             |     PID      | CTX | Priority | PTID |            Memalloc | Status |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
+| N/A | N/A                 |     N/A      | N/A |   N/A    | N/A  |                 N/A |  N/A   |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
 ```
 
 ---
