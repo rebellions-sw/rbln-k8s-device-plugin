@@ -2,7 +2,7 @@
 
 [![build-test-lint](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/build-test-lint.yml/badge.svg)](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/build-test-lint.yml)
 [![CodeQL](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/codeql.yml)
-![Docker Pulls](https://img.shields.io/docker/v/rebellions/k8s-device-plugin/latest)
+[![Docker Pulls](https://img.shields.io/docker/v/rebellions/k8s-device-plugin/latest)](https://hub.docker.com/r/rebellions/k8s-device-plugin)
 
 This repository contains Kubernetes device plugin implementation to support Rebellions NPU devices (e.g. ATOM) on Kubernetes cluster environment, which is built on top of [SR-IOV Network Device Plugin](https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin).
 
