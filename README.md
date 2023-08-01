@@ -18,12 +18,12 @@ $ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-dev
 
 Verify that the installed DaemonSet is running properly.
 ```bash
-$ kubectl get pod -n kube-system -l name=rebel-sriov-device-plugin
-NAME                              READY   STATUS    RESTARTS      AGE
-rebel-sriov-device-plugin-24rwg   1/1     Running   0             11d
-rebel-sriov-device-plugin-f5l7w   1/1     Running   0             11d
-rebel-sriov-device-plugin-ms9n9   1/1     Running   0             11d
-rebel-sriov-device-plugin-svqd9   1/1     Running   0             11d
+$ kubectl get pod -n kube-system -l name=rebel-device-plugin
+NAME                        READY   STATUS    RESTARTS   AGE
+rebel-device-plugin-5tj4z   1/1     Running   0          41s
+rebel-device-plugin-7zqgh   1/1     Running   0          41s
+rebel-device-plugin-ddtts   1/1     Running   0          41s
+rebel-device-plugin-zrw8s   1/1     Running   0          41s
 ```
 
 By describing nodes containing Rebellions NPUs (ATOM for example), you can see the resource named `rebellions.ai/ATOM`.
