@@ -70,5 +70,5 @@ jobs:
 
       - name: Create manifest for multi-arch images
         run: |
-          docker buildx imagetools create -t ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.tags }} \
-          ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.tags }}-amd64
+          docker buildx imagetools create -t ${{ steps.docker_meta.outputs.tags }} \
+          ${{ steps.docker_meta.outputs.tags }}-amd64
