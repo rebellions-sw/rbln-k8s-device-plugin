@@ -1,3 +1,74 @@
+# Rebellions Kubernetes Device Plugin
+
+[![build-test-lint](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/build-test-lint.yml/badge.svg)](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/build-test-lint.yml)
+[![CodeQL](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/rebellions-sw/rebel-k8s-device-plugin/actions/workflows/codeql.yml)
+[![Docker Pulls](https://img.shields.io/docker/v/rebellions/k8s-device-plugin/latest)](https://hub.docker.com/r/rebellions/k8s-device-plugin)
+
+This repository contains Kubernetes device plugin implementation to support Rebellions NPU devices (e.g. ATOM) on Kubernetes cluster environment, which is built on top of [SR-IOV Network Device Plugin](https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin).
+
+## Quickstart
+
+Assuming your nodes have Rebellions NPU devices equipped and Rebellions driver installed correctly, running these commands will execute a device plugin DaemonSet pod for each node.
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-device-plugin/master/deployments/rebel/configmap.yaml
+
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-device-plugin/master/deployments/rebel/daemonset.yaml
+```
+
+Verify that the installed DaemonSet is running properly.
+```bash
+$ kubectl get pod -n kube-system -l name=rebel-sriov-device-plugin
+NAME                              READY   STATUS    RESTARTS      AGE
+rebel-sriov-device-plugin-24rwg   1/1     Running   0             11d
+rebel-sriov-device-plugin-f5l7w   1/1     Running   0             11d
+rebel-sriov-device-plugin-ms9n9   1/1     Running   0             11d
+rebel-sriov-device-plugin-svqd9   1/1     Running   0             11d
+```
+
+By describing nodes containing Rebellions NPUs (ATOM for example), you can see the resource named `rebellions.ai/ATOM`.
+```bash
+$ kubectl descirbe node <your-node-name>
+...
+Capacity:
+  ...
+  rebellions.ai/ATOM:  1
+Allocatable:
+  ...
+  rebellions.ai/ATOM:  1
+...
+```
+
+Create a test pod to verify it's scheduled and running successfully.
+```bash
+$ kubectl create -f https://raw.githubusercontent.com/rebellions-sw/rebel-k8s-device-plugin/master/deployments/rebel/pod-tc.yaml
+
+$ kubectl get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+rebel-device-plugin-testpod   1/1     Running   0          6s
+```
+
+The device plugin automatically mounts `rbln-stat` utility (installed together with Rebellions driver) from host machine to pod container, so you can check it by attaching to the pod.
+```bash
+$ kubectl exec -it rebel-device-plugin-testpod -- bash
+root@rebel-device-plugin-testpod:/# rbln-stat
++-------------------------------------------------------------------------------------------------+
+|                        Device Infomation KMD ver: 0.8.44-15d5afc-release                        |
++-----+--------+---------------+------+---------------------------------------------------+-------+
+| NPU | Device |   PCI BUS ID  | Temp |                 Memory(used/total)                |  Util |
++-----+--------+---------------+------+---------------------------------------------------+-------+
+| 0   | rbln0  |  0000:51:00.0 |  48C |                   0.0B / 15.7GiB                  |   0.0 |
++-----+--------+---------------+------+---------------------------------------------------+-------+
++-------------------------------------------------------------------------------------------------+
+|                                        Context Infomation                                       |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
+| NPU | Process             |     PID      | CTX | Priority | PTID |            Memalloc | Status |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
+| N/A | N/A                 |     N/A      | N/A |   N/A    | N/A  |                 N/A |  N/A   |
++-----+---------------------+--------------+-----+----------+------+---------------------+--------+
+```
+
+---
 
 # SR-IOV Network Device Plugin for Kubernetes
 
