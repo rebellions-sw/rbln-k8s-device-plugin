@@ -59,7 +59,7 @@ func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 		HostPath:      devicePath,
 		ContainerPath: devicePath,
-		Permissions:   "rwm",
+		Permissions:   "rw",
 	})
 	return devSpecs
 }
