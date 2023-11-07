@@ -22,7 +22,7 @@ import (
 	. "github.com/onsi/gomega"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
 )
 
 var _ = Describe("vdpaInfoProvider", func() {
@@ -40,12 +40,12 @@ var _ = Describe("vdpaInfoProvider", func() {
 				{
 					HostPath:      "/dev/vhost-net",
 					ContainerPath: "/dev/vhost-net",
-					Permissions:   "mrw",
+					Permissions:   "rw",
 				},
 				{
 					HostPath:      "/dev/net/tun",
 					ContainerPath: "/dev/net/tun",
-					Permissions:   "mrw",
+					Permissions:   "rw",
 				},
 			}))
 		})

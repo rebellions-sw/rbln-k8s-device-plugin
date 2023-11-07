@@ -23,8 +23,8 @@ import (
 	. "github.com/onsi/gomega"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
 
 var _ = Describe("uioInfoProvider", func() {
@@ -52,7 +52,7 @@ var _ = Describe("uioInfoProvider", func() {
 			},
 			"0000:02:00.0",
 			[]*pluginapi.DeviceSpec{
-				{HostPath: "/dev/uio0", ContainerPath: "/dev/uio0", Permissions: "mrw"},
+				{HostPath: "/dev/uio0", ContainerPath: "/dev/uio0", Permissions: "rw"},
 			},
 		),
 	)

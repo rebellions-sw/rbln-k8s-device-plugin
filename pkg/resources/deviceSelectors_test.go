@@ -1,9 +1,9 @@
 package resources_test
 
 import (
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -294,6 +294,26 @@ var _ = Describe("DeviceSelectors", func() {
 				Expect(filtered).To(ContainElement(&dev0))
 				Expect(filtered).To(ContainElement(&dev1))
 				Expect(filtered).NotTo(ContainElement(&dev2))
+			})
+		})
+	})
+
+	Describe("acpiIndex selector", func() {
+		Context("filtering", func() {
+			It("should return devices matching the correct acpi index", func() {
+				acpiIndexes := []string{"101"}
+				sel := resources.NewAcpiIndexSelector(acpiIndexes)
+
+				dev0 := mocks.PciNetDevice{}
+				dev0.On("GetAcpiIndex").Return("101")
+				dev1 := mocks.PciNetDevice{}
+				dev1.On("GetAcpiIndex").Return("102")
+
+				in := []types.HostDevice{&dev0, &dev1}
+				filtered := sel.Filter(in)
+
+				Expect(filtered).To(ContainElement(&dev0))
+				Expect(filtered).NotTo(ContainElement(&dev1))
 			})
 		})
 	})

@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 // vdpaInfoProvider is a DeviceInfoProvider that handles the API information of vdpa-capable devices.
@@ -68,7 +68,7 @@ func (vip *vdpaInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 			HostPath:      vdpaPath,
 			ContainerPath: vdpaPath,
-			Permissions:   "mrw",
+			Permissions:   "rw",
 		})
 		vip.vdpaPath = vdpaPath
 	}

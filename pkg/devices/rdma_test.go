@@ -22,9 +22,9 @@ import (
 	. "github.com/onsi/gomega"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("RdmaSpec", func() {
@@ -57,27 +57,27 @@ var _ = Describe("RdmaSpec", func() {
 					{
 						ContainerPath: "/dev/infiniband/issm0",
 						HostPath:      "/dev/infiniband/issm0",
-						Permissions:   "rwm",
+						Permissions:   "rw",
 					},
 					{
 						ContainerPath: "/dev/infiniband/umad0",
 						HostPath:      "/dev/infiniband/umad0",
-						Permissions:   "rwm",
+						Permissions:   "rw",
 					},
 					{
 						ContainerPath: "/dev/infiniband/uverbs0",
 						HostPath:      "/dev/infiniband/uverbs0",
-						Permissions:   "rwm",
+						Permissions:   "rw",
 					},
 					{
 						ContainerPath: "/dev/infiniband/rdma_cm",
 						HostPath:      "/dev/infiniband/rdma_cm",
-						Permissions:   "rwm",
+						Permissions:   "rw",
 					},
 					{
 						ContainerPath: "/dev/infiniband/rdma_cm",
 						HostPath:      "/dev/infiniband/rdma_cm",
-						Permissions:   "rwm",
+						Permissions:   "rw",
 					},
 				}))
 				fakeRdmaProvider.AssertExpectations(t)

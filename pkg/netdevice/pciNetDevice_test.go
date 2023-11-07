@@ -21,11 +21,11 @@ import (
 	"github.com/jaypipes/pcidb"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -63,7 +63,7 @@ var _ = Describe("PciNetDevice", func() {
 				defer fs.Use()()
 				utils.SetDefaultMockNetlinkProvider()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn("0000:00:00.1")
 				rc := &types.ResourceConfig{}
 
@@ -260,7 +260,7 @@ var _ = Describe("PciNetDevice", func() {
 				},
 			}
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			in := newPciDeviceFn("0000:00:00.1")
 			It("should add the vhost-net deviceSpec", func() {
 				defer fs.Use()()
@@ -341,7 +341,7 @@ var _ = Describe("PciNetDevice", func() {
 				defer fs.Use()()
 				utils.SetDefaultMockNetlinkProvider()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn("0000:00:00.1")
 				rc := &types.ResourceConfig{}
 
@@ -434,7 +434,7 @@ var _ = Describe("PciNetDevice", func() {
 					{
 						HostPath:      "/dev/vhost-vdpa1",
 						ContainerPath: "/dev/vhost-vdpa1",
-						Permissions:   "mrw",
+						Permissions:   "rw",
 					}}))
 				Expect(dev1.GetMounts()).To(HaveLen(0))
 				Expect(dev1.GetVdpaDevice()).To(Equal(fakeVdpaVhost))

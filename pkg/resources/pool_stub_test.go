@@ -5,11 +5,11 @@ import (
 	"github.com/jaypipes/pcidb"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -50,7 +50,7 @@ var _ = Describe("ResourcePool", func() {
 				"sys/bus/pci/devices/0000:00:00.1/physfn":      "../0000:01:00.0",
 			},
 		}
-		f = factory.NewResourceFactory("fake", "fake", true)
+		f = factory.NewResourceFactory("fake", "fake", true, false)
 		rc = &types.ResourceConfig{SelectorObjs: []interface{}{types.NetDeviceSelectors{}}}
 		devs = []string{"0000:00:00.1", "0000:00:00.2"}
 	})
@@ -71,9 +71,9 @@ var _ = Describe("ResourcePool", func() {
 				specs := rp.GetDeviceSpecs(devs)
 
 				expected := []*pluginapi.DeviceSpec{
-					{ContainerPath: "/dev/vfio/vfio", HostPath: "/dev/vfio/vfio", Permissions: "mrw"},
-					{ContainerPath: "/dev/vfio/0", HostPath: "/dev/vfio/0", Permissions: "mrw"},
-					{ContainerPath: "/dev/vfio/1", HostPath: "/dev/vfio/1", Permissions: "mrw"},
+					{ContainerPath: "/dev/vfio/vfio", HostPath: "/dev/vfio/vfio", Permissions: "rw"},
+					{ContainerPath: "/dev/vfio/0", HostPath: "/dev/vfio/0", Permissions: "rw"},
+					{ContainerPath: "/dev/vfio/1", HostPath: "/dev/vfio/1", Permissions: "rw"},
 				}
 				Expect(specs).To(HaveLen(3))
 				Expect(specs).To(ConsistOf(expected))

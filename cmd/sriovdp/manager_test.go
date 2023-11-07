@@ -19,11 +19,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	CDImocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi/mocks"
+
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -441,7 +443,7 @@ var _ = Describe("Resource manager", func() {
 				_ = os.Unsetenv("GHW_CHROOT")
 			}()
 
-			rf := factory.NewResourceFactory("fake", "fake", true)
+			rf := factory.NewResourceFactory("fake", "fake", true, false)
 
 			rm := &resourceManager{
 				rFactory: rf,
@@ -613,6 +615,25 @@ var _ = Describe("Resource manager", func() {
 			err := rm.stopAllServers()
 			It("should fail", func() {
 				Expect(err).To(HaveOccurred())
+			})
+		})
+		Context("when resource servers cleans CDI specs ", func() {
+			rs := &mocks.ResourceServer{}
+			rs.On("Stop").Return(nil)
+
+			cp = &cliParams{
+				configFile:     "/tmp/sriovdp/test_config",
+				resourcePrefix: "test_",
+				useCdi:         true,
+			}
+			rm = newResourceManager(cp)
+			cdi := &CDImocks.CDI{}
+			cdi.On("CleanupSpecs").Return(nil)
+			rm.cdi = &CDImocks.CDI{}
+
+			err := rm.stopAllServers()
+			It("shouldn't fail", func() {
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 	})

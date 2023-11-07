@@ -17,9 +17,9 @@ package accelerator
 import (
 	"github.com/jaypipes/ghw"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 // accelDevice extends HostDevice and embedds GenPciDevice

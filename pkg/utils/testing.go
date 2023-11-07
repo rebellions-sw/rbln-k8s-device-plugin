@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	nl "github.com/vishvananda/netlink"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
 )
 
 // FakeFilesystem allows to setup isolated fake files structure used for the tests.
@@ -46,6 +46,11 @@ func (fs *FakeFilesystem) Use() func() {
 	err = os.MkdirAll(path.Join(fs.RootDir, "usr/share/hwdata"), 0755)
 	if err != nil {
 		panic(fmt.Errorf("error creating fake directory: %s", err.Error()))
+	}
+	//nolint: gomnd
+	err = os.MkdirAll(path.Join(fs.RootDir, "var/run/cdi"), 0755)
+	if err != nil {
+		panic(fmt.Errorf("error creating fake cdi directory: %s", err.Error()))
 	}
 
 	// TODO: Remove writing pci.ids file once ghw is mocked

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 const (
@@ -87,6 +87,26 @@ func (s *pciAddressSelector) Filter(inDevices []types.HostDevice) []types.HostDe
 	for _, dev := range inDevices {
 		pciAddr := dev.(types.PciDevice).GetPciAddr()
 		if contains(s.pciAddresses, pciAddr) {
+			filteredList = append(filteredList, dev)
+		}
+	}
+	return filteredList
+}
+
+// NewAcpiIndexSelector returns a NetDevSelector interface for netDev list
+func NewAcpiIndexSelector(acpiIndexes []string) types.DeviceSelector {
+	return &acpiIndexSelector{acpiIndexes: acpiIndexes}
+}
+
+type acpiIndexSelector struct {
+	acpiIndexes []string
+}
+
+func (s *acpiIndexSelector) Filter(inDevices []types.HostDevice) []types.HostDevice {
+	filteredList := make([]types.HostDevice, 0)
+	for _, dev := range inDevices {
+		acpiIndex := dev.(types.PciDevice).GetAcpiIndex()
+		if contains(s.acpiIndexes, acpiIndex) {
 			filteredList = append(filteredList, dev)
 		}
 	}
