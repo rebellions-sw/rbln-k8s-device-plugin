@@ -18,8 +18,8 @@ import (
 	"github.com/golang/glog"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
 
 type uioInfoProvider struct {
@@ -51,7 +51,7 @@ func (rp *uioInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 			HostPath:      uioDev,
 			ContainerPath: uioDev,
-			Permissions:   "mrw",
+			Permissions:   "rw",
 		})
 		rp.uioDev = uioDev
 	}

@@ -20,10 +20,10 @@ import (
 	nettypes "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,7 +32,7 @@ import (
 
 var _ = Describe("NetResourcePool", func() {
 	Context("getting a new instance of the pool", func() {
-		rf := factory.NewResourceFactory("fake", "fake", true)
+		rf := factory.NewResourceFactory("fake", "fake", true, false)
 		nadutils := rf.GetNadUtils()
 		rc := &types.ResourceConfig{
 			ResourceName:   "fake",
@@ -49,7 +49,7 @@ var _ = Describe("NetResourcePool", func() {
 	})
 	Describe("getting DeviceSpecs", func() {
 		Context("for multiple devices", func() {
-			rf := factory.NewResourceFactory("fake", "fake", true)
+			rf := factory.NewResourceFactory("fake", "fake", true, false)
 			nadutils := rf.GetNadUtils()
 			rc := &types.ResourceConfig{
 				ResourceName:   "fake",

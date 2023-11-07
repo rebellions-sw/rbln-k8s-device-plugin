@@ -19,8 +19,12 @@ import (
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+)
+
+const (
+	accelPoolType = "net-accel"
 )
 
 type accelResourcePool struct {
@@ -56,4 +60,9 @@ func (rp *accelResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.Dev
 		}
 	}
 	return devSpecs
+}
+
+// GetCDIKind returns device kind for CDI spec
+func (rp *accelResourcePool) GetCDIName() string {
+	return accelPoolType
 }

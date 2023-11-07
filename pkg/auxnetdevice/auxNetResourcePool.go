@@ -21,8 +21,12 @@ import (
 	"github.com/golang/glog"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+)
+
+const (
+	auxPoolType = "net-sf"
 )
 
 type auxNetResourcePool struct {
@@ -59,4 +63,9 @@ func (ap *auxNetResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.De
 		}
 	}
 	return devSpecs
+}
+
+// GetCDIKind returns device kind for CDI spec
+func (ap *auxNetResourcePool) GetCDIName() string {
+	return auxPoolType
 }

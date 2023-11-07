@@ -24,11 +24,11 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
 
 var _ = Describe("HostDevice", func() {
@@ -48,7 +48,7 @@ var _ = Describe("HostDevice", func() {
 			}
 			defer fs.Use()()
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			pciAddr := "0000:00:00.1"
 			in := newPciDeviceFn(pciAddr)
 			rc := &types.ResourceConfig{}
@@ -72,7 +72,7 @@ var _ = Describe("HostDevice", func() {
 			}
 			defer fs.Use()()
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			pciAddr := "0000:00:00.1"
 			in := newPciDeviceFn(pciAddr)
 			rc := &types.ResourceConfig{}
@@ -100,7 +100,7 @@ var _ = Describe("HostDevice", func() {
 			}
 			defer fs.Use()()
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			pciAddr := "0000:00:00.1"
 			in := newPciDeviceFn(pciAddr)
 			rc := &types.ResourceConfig{}
@@ -123,7 +123,7 @@ var _ = Describe("HostDevice", func() {
 			}
 			defer fs.Use()()
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			pciAddr := "0000:00:00.1"
 			in := newPciDeviceFn(pciAddr)
 			rc := &types.ResourceConfig{}
@@ -147,7 +147,7 @@ var _ = Describe("HostDevice", func() {
 			}
 			defer fs.Use()()
 
-			f := factory.NewResourceFactory("fake", "fake", true)
+			f := factory.NewResourceFactory("fake", "fake", true, false)
 			pciAddr := "0000:00:00.1"
 			in := newPciDeviceFn(pciAddr)
 			rc := &types.ResourceConfig{ExcludeTopology: true}

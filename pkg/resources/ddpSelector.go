@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 type ddpSelector struct {

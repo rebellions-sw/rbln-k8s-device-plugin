@@ -22,7 +22,11 @@ import (
 	"github.com/golang/glog"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+)
+
+const (
+	poolType = "net-pci"
 )
 
 // ResourcePoolImpl implements stub ResourcePool interface
@@ -171,4 +175,9 @@ func (rp *ResourcePoolImpl) StoreDeviceInfoFile(resourceNamePrefix string) error
 // clean the Device Info file
 func (rp *ResourcePoolImpl) CleanDeviceInfoFile(resourceNamePrefix string) error {
 	return nil
+}
+
+// GetCDIName returns device kind for CDI spec
+func (rp *ResourcePoolImpl) GetCDIName() string {
+	return poolType
 }

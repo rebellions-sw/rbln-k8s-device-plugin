@@ -18,8 +18,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 var _ = Describe("ExtraInfoProvider", func() {

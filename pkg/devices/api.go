@@ -20,7 +20,7 @@ package devices
 import (
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 // APIDeviceImpl is an implementation of APIDevice interface

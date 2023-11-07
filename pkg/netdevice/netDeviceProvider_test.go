@@ -15,11 +15,11 @@
 package netdevice_test
 
 import (
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
@@ -92,7 +92,7 @@ var _ = Describe("NetDeviceProvider", func() {
 
 			defer fs.Use()()
 
-			rf := factory.NewResourceFactory("fake", "fake", true)
+			rf := factory.NewResourceFactory("fake", "fake", true, false)
 			p := netdevice.NewNetDeviceProvider(rf)
 			config := &types.ResourceConfig{
 				DeviceType: types.NetDeviceType,
@@ -139,7 +139,7 @@ var _ = Describe("NetDeviceProvider", func() {
 	Describe("getting Filtered devices", func() {
 		Context("using selectors", func() {
 			It("should correctly filter devices", func() {
-				rf := factory.NewResourceFactory("fake", "fake", false)
+				rf := factory.NewResourceFactory("fake", "fake", false, false)
 				p := netdevice.NewNetDeviceProvider(rf)
 				all := make([]types.HostDevice, 5)
 				mocked := make([]mocks.PciNetDevice, 5)
@@ -250,7 +250,7 @@ var _ = Describe("NetDeviceProvider", func() {
 				Expect(actual).To(ConsistOf(matchingDevices))
 			})
 			It("should error if the selector index is out of bounds", func() {
-				rf := factory.NewResourceFactory("fake", "fake", false)
+				rf := factory.NewResourceFactory("fake", "fake", false, false)
 				p := netdevice.NewNetDeviceProvider(rf)
 				devs := make([]types.HostDevice, 0)
 

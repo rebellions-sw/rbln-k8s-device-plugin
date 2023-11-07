@@ -18,10 +18,10 @@ import (
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/accelerator"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -53,7 +53,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{}
 
@@ -99,7 +99,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{}
 
@@ -122,7 +122,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{}
 
@@ -146,7 +146,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{ExcludeTopology: true}
 
@@ -164,7 +164,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{}
 
@@ -185,7 +185,7 @@ var _ = Describe("Accelerator", func() {
 				}
 				defer fs.Use()()
 
-				f := factory.NewResourceFactory("fake", "fake", true)
+				f := factory.NewResourceFactory("fake", "fake", true, false)
 				in := newPciDeviceFn()
 				config := &types.ResourceConfig{}
 

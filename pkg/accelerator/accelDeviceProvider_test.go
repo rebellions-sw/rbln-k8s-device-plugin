@@ -15,11 +15,11 @@
 package accelerator_test
 
 import (
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/accelerator"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
@@ -92,7 +92,7 @@ var _ = Describe("AcceleratorProvider", func() {
 
 			defer fs.Use()()
 
-			rf := factory.NewResourceFactory("fake", "fake", true)
+			rf := factory.NewResourceFactory("fake", "fake", true, false)
 			p := accelerator.NewAccelDeviceProvider(rf)
 			config := &types.ResourceConfig{
 				DeviceType: types.AcceleratorType,
@@ -148,7 +148,7 @@ var _ = Describe("AcceleratorProvider", func() {
 	Describe("getting Filtered devices", func() {
 		Context("using selectors", func() {
 			It("should correctly filter devices", func() {
-				rf := factory.NewResourceFactory("fake", "fake", false)
+				rf := factory.NewResourceFactory("fake", "fake", false, false)
 				p := accelerator.NewAccelDeviceProvider(rf)
 				all := make([]types.HostDevice, 5)
 				mocked := make([]mocks.AccelDevice, 5)
@@ -218,7 +218,7 @@ var _ = Describe("AcceleratorProvider", func() {
 				Expect(actual).To(ConsistOf(matchingDevices))
 			})
 			It("should error if the selector index is out of bounds", func() {
-				rf := factory.NewResourceFactory("fake", "fake", false)
+				rf := factory.NewResourceFactory("fake", "fake", false, false)
 				p := accelerator.NewAccelDeviceProvider(rf)
 				devs := make([]types.HostDevice, 0)
 

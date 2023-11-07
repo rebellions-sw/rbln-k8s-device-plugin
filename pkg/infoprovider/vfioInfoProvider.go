@@ -18,8 +18,8 @@ import (
 	"github.com/golang/glog"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
 
 /*
@@ -51,7 +51,7 @@ func (rp *vfioInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 		HostPath:      rp.vfioMount,
 		ContainerPath: rp.vfioMount,
-		Permissions:   "mrw",
+		Permissions:   "rw",
 	})
 
 	vfioDevHost, vfioDevContainer, err := utils.GetVFIODeviceFile(rp.pciAddr)
@@ -61,7 +61,7 @@ func (rp *vfioInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 			HostPath:      vfioDevHost,
 			ContainerPath: vfioDevContainer,
-			Permissions:   "mrw",
+			Permissions:   "rw",
 		})
 		rp.vfioDevContainer = vfioDevContainer
 	}

@@ -20,30 +20,32 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/accelerator"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/auxnetdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/sriov-network-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/auxnetdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 type resourceFactory struct {
 	endPointPrefix string
 	endPointSuffix string
 	pluginWatch    bool
+	useCdi         bool
 }
 
 var instance *resourceFactory
 
 // NewResourceFactory returns an instance of Resource Server factory
-func NewResourceFactory(prefix, suffix string, pluginWatch bool) types.ResourceFactory {
+func NewResourceFactory(prefix, suffix string, pluginWatch, useCdi bool) types.ResourceFactory {
 	if instance == nil {
 		return &resourceFactory{
 			endPointPrefix: prefix,
 			endPointSuffix: suffix,
 			pluginWatch:    pluginWatch,
+			useCdi:         useCdi,
 		}
 	}
 	return instance
@@ -56,7 +58,7 @@ func (rf *resourceFactory) GetResourceServer(rp types.ResourcePool) (types.Resou
 		if prefixOverride := rp.GetResourcePrefix(); prefixOverride != "" {
 			prefix = prefixOverride
 		}
-		return resources.NewResourceServer(prefix, rf.endPointSuffix, rf.pluginWatch, rp), nil
+		return resources.NewResourceServer(prefix, rf.endPointSuffix, rf.pluginWatch, rf.useCdi, rp), nil
 	}
 	return nil, fmt.Errorf("factory: unable to get resource pool object")
 }
@@ -91,6 +93,8 @@ func (rf *resourceFactory) GetSelector(attr string, values []string) (types.Devi
 		return resources.NewRootDeviceSelector(values), nil
 	case "linkTypes":
 		return resources.NewLinkTypeSelector(values), nil
+	case "acpiIndexes":
+		return resources.NewAcpiIndexSelector(values), nil
 	case "ddpProfiles":
 		return resources.NewDdpSelector(values), nil
 	case "auxTypes":
@@ -98,6 +102,15 @@ func (rf *resourceFactory) GetSelector(attr string, values []string) (types.Devi
 	default:
 		return nil, fmt.Errorf("GetSelector(): invalid attribute %s", attr)
 	}
+}
+
+func (rf *resourceFactory) FilterBySelector(selectorName string, values []string, devicesToFilter []types.HostDevice) []types.HostDevice {
+	if len(values) > 0 {
+		if selector, err := rf.GetSelector(selectorName, values); err == nil {
+			return selector.Filter(devicesToFilter)
+		}
+	}
+	return devicesToFilter
 }
 
 // GetResourcePool returns an instance of resourcePool
