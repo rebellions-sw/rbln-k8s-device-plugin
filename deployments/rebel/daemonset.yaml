@@ -35,7 +35,7 @@ spec:
       serviceAccountName: rebel-device-plugin
       containers:
         - name: device-plugin
-          image: rebellions/k8s-device-plugin:latest
+          image: rebellions/k8s-device-plugin:v0.2.0
           imagePullPolicy: IfNotPresent
           args:
             - --log-dir=device-plugin
@@ -51,7 +51,10 @@ spec:
               memory: "200Mi"
           volumeMounts:
             - name: devicesock
-              mountPath: /var/lib/kubelet/
+              mountPath: /var/lib/kubelet/device-plugins
+              readOnly: false
+            - name: plugins-registry
+              mountPath: /var/lib/kubelet/plugins_registry
               readOnly: false
             - name: log
               mountPath: /var/log
