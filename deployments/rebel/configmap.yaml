@@ -13,7 +13,7 @@ data:
                 "deviceType": "accelerator",
                 "selectors": {
                     "vendors": ["1eff"],
-                    "devices": ["0010"],
+                    "devices": ["0010", "0011"],
                     "drivers": ["rebellions"]
                 }
             }
