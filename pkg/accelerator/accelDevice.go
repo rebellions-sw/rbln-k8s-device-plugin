@@ -34,7 +34,7 @@ func NewAccelDevice(dev *ghw.PCIDevice, rFactory types.ResourceFactory,
 	infoProviders := make([]types.DeviceInfoProvider, 0)
 
 	// rebellions: add rebellions info provider
-	if dev.Vendor.ID == "1eff" {
+	if dev.Vendor.ID == infoprovider.RebellionsVendorID {
 		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Address))
 	}
 

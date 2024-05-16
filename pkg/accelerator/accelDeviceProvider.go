@@ -20,6 +20,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/jaypipes/ghw"
 
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
@@ -66,7 +67,7 @@ func (ap *accelDeviceProvider) AddTargetDevices(devices []*ghw.PCIDevice, device
 			productName := utils.NormalizeProductName(device.Product.Name)
 
 			// rebellions: filter out PFs if SR-IOV is enabled
-			if device.Vendor.ID == "1eff" {
+			if device.Vendor.ID == infoprovider.RebellionsVendorID {
 				if utils.SriovConfigured(device.Address) {
 					glog.Infof("accelerator AddTargetDevices(): [Rebellions] PF is excluded from available resources if SR-IOV is enabled")
 					continue
