@@ -14,8 +14,9 @@ import (
 
 // constants used by rebellions info provider
 const (
-	SysfsDriverPools = "/sys/bus/pci/drivers/rebellions/%s/pools"
-	CharDeviceNode   = "/dev/%s"
+	RebellionsVendorID = "1eff"
+	SysfsDriverPools   = "/sys/bus/pci/drivers/rebellions/%s/pools"
+	CharDeviceNode     = "/dev/%s"
 )
 
 type rebellionsInfoProvider struct {

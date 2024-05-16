@@ -32,7 +32,9 @@ type accelDevice struct {
 func NewAccelDevice(dev *ghw.PCIDevice, rFactory types.ResourceFactory,
 	rc *types.ResourceConfig) (types.AccelDevice, error) {
 	infoProviders := make([]types.DeviceInfoProvider, 0)
-	if dev.Vendor.ID == "1eff" {
+
+	// rebellions: add rebellions info provider
+	if dev.Vendor.ID == infoprovider.RebellionsVendorID {
 		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Address))
 	}
 
