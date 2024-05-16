@@ -64,6 +64,15 @@ func (ap *accelDeviceProvider) AddTargetDevices(devices []*ghw.PCIDevice, device
 		if devClass == int64(deviceCode) {
 			vendorName := utils.NormalizeVendorName(device.Vendor.Name)
 			productName := utils.NormalizeProductName(device.Product.Name)
+
+			// rebellions: filter out PFs if SR-IOV is enabled
+			if device.Vendor.ID == "1eff" {
+				if utils.SriovConfigured(device.Address) {
+					glog.Infof("accelerator AddTargetDevices(): [Rebellions] PF is excluded from available resources if SR-IOV is enabled")
+					continue
+				}
+			}
+
 			glog.Infof("accelerator AddTargetDevices(): device found: %-12s\t%-12s\t%-20s\t%-40s", device.Address,
 				device.Class.ID, vendorName, productName)
 
