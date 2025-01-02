@@ -49,9 +49,8 @@ type resourceServer struct {
 }
 
 const (
-	rsWatchInterval    = 5 * time.Second
-	serverStartTimeout = 5 * time.Second
-	unix               = "unix"
+	rsWatchInterval = 5 * time.Second
+	unix            = "unix"
 )
 
 // NewResourceServer returns an instance of ResourceServer
@@ -79,7 +78,7 @@ func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types
 
 func (rs *resourceServer) register() error {
 	kubeletEndpoint := unix + ":" + filepath.Join(types.DeprecatedSockDir, types.KubeEndPoint)
-	conn, err := grpc.Dial(kubeletEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(kubeletEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glog.Errorf("%s device plugin unable connect to Kubelet : %v", rs.resourcePool.GetResourceName(), err)
 		return err
@@ -144,6 +143,12 @@ func (rs *resourceServer) Allocate(ctx context.Context, rqt *pluginapi.AllocateR
 		} else {
 			containerResp.Devices = rs.resourcePool.GetDeviceSpecs(container.DevicesIDs)
 			containerResp.Mounts = rs.resourcePool.GetMounts(container.DevicesIDs)
+		}
+
+		err = rs.resourcePool.StoreDeviceInfoFile(rs.resourceNamePrefix, container.DevicesIDs)
+		if err != nil {
+			glog.Errorf("failed to store device info file for device IDs %v: %v", container.DevicesIDs, err)
+			return nil, err
 		}
 
 		containerResp.Envs = envs
@@ -248,10 +253,6 @@ func (rs *resourceServer) Start() error {
 	resourceName := rs.resourcePool.GetResourceName()
 	_ = rs.cleanUp() // try tp clean up and continue
 
-	if err := rs.resourcePool.StoreDeviceInfoFile(rs.resourceNamePrefix); err != nil {
-		glog.Errorf("%s: error creating DeviceInfo File: %s", rs.resourcePool.GetResourceName(), err.Error())
-	}
-
 	glog.Infof("starting %s device plugin endpoint at: %s\n", resourceName, rs.endPoint)
 	lis, err := net.Listen(unix, rs.sockPath)
 	if err != nil {
@@ -265,23 +266,13 @@ func (rs *resourceServer) Start() error {
 	}
 	pluginapi.RegisterDevicePluginServer(rs.grpcServer, rs)
 
+	// start serving from grpcServer
 	go func() {
 		err := rs.grpcServer.Serve(lis)
 		if err != nil {
 			glog.Errorf("serving incoming requests failed: %s", err.Error())
 		}
 	}()
-	// Wait for server to start by launching a blocking connection
-	ctx, _ := context.WithTimeout(context.TODO(), serverStartTimeout)
-	conn, err := grpc.DialContext(
-		ctx, unix+":"+rs.sockPath, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
-
-	if err != nil {
-		glog.Errorf("error. unable to establish test connection with %s gRPC server: %v", resourceName, err)
-		return err
-	}
-	glog.Infof("%s device plugin endpoint started serving", resourceName)
-	conn.Close()
 
 	rs.triggerUpdate()
 
