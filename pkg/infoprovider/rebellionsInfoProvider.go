@@ -17,7 +17,7 @@ const (
 	RebellionsVendorID = "1eff"
 	SysfsDriverPools   = "/sys/bus/pci/drivers/rebellions/%s/pools"
 	CharDeviceNode     = "/dev/%s"
-	RsdNode           = "/dev/rsd"
+	RsdNode            = "/dev/rsd0"
 )
 
 type rebellionsInfoProvider struct {
