@@ -124,6 +124,7 @@ jobs:
       run: go mod vendor && git diff --exit-code
 
   sriov-operator-e2e-test:
+    if: github.repository_owner == 'k8snetworkplumbingwg'
     name: SR-IOV operator e2e tests
     needs: [ build,test ]
     runs-on: [ sriov ]
