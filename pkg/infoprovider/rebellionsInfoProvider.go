@@ -17,7 +17,7 @@ const (
 	RebellionsVendorID = "1eff"
 	SysfsDriverPools   = "/sys/bus/pci/drivers/rebellions/%s/pools"
 	CharDeviceNode     = "/dev/%s"
-	RmdaNode           = "/dev/rmda"
+	RsdNode           = "/dev/rsd"
 )
 
 type rebellionsInfoProvider struct {
@@ -63,8 +63,8 @@ func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 		ContainerPath: devicePath,
 		Permissions:   "rw",
 	}, &pluginapi.DeviceSpec{
-		HostPath:      RmdaNode,
-		ContainerPath: RmdaNode,
+		HostPath:      RsdNode,
+		ContainerPath: RsdNode,
 		Permissions:   "rw",
 	})
 	return devSpecs
