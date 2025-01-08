@@ -29,9 +29,12 @@ spec:
       nodeSelector:
         kubernetes.io/arch: amd64
       tolerations:
-        - key: node-role.kubernetes.io/master
+        - key: ""
           operator: Exists
           effect: NoSchedule
+        - key: ""
+          operator: Exists
+          effect: NoExecute
       serviceAccountName: rebel-device-plugin
       containers:
         - name: device-plugin
