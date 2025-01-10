@@ -29,13 +29,16 @@ spec:
       nodeSelector:
         kubernetes.io/arch: amd64
       tolerations:
-        - key: node-role.kubernetes.io/master
+        - key: ""
           operator: Exists
           effect: NoSchedule
+        - key: ""
+          operator: Exists
+          effect: NoExecute
       serviceAccountName: rebel-device-plugin
       containers:
         - name: device-plugin
-          image: rebellions/k8s-device-plugin:v0.2.1
+          image: rebellions/k8s-device-plugin:v0.3.0
           imagePullPolicy: IfNotPresent
           args:
             - --log-dir=device-plugin
