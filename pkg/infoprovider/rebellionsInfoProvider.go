@@ -3,6 +3,7 @@ package infoprovider
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -14,18 +15,36 @@ import (
 
 // constants used by rebellions info provider
 const (
-	RebellionsVendorID = "1eff"
-	SysfsDriverPools   = "/sys/bus/pci/drivers/rebellions/%s/pools"
-	CharDeviceNode     = "/dev/%s"
-	RsdNode            = "/dev/rsd0"
+	RebellionsVendorID  = "1eff"
+	SysfsDriverPools    = "/sys/bus/pci/drivers/rebellions/%s/pools"
+	SysDeviceIommuGroup = "/sys/bus/pci/devices/%s/iommu_group"
+	CharDeviceNode      = "/dev/%s"
+	RsdNode             = "/dev/rsd0"
+	VFIOPath            = "/dev/vfio/vfio"
 )
 
 type rebellionsInfoProvider struct {
+	driver   string
 	deviceID string
 }
 
 // NewRebellionsInfoProvider returns a new Rebellions Information Provider
-func NewRebellionsInfoProvider(pciAddress string) types.DeviceInfoProvider {
+func NewRebellionsInfoProvider(pciAddress, driver string) types.DeviceInfoProvider {
+	if driver == "vfio-pci" {
+		linkPath := fmt.Sprintf(SysDeviceIommuGroup, pciAddress)
+		group, err := getIommuGroup(linkPath, pciAddress)
+		if err != nil {
+			glog.Errorf("NewRebellionsInfoProvider(): Failed to read %s: %s", linkPath, err.Error())
+			return nil
+		}
+		deviceId := "vfio/" + group
+		glog.Infof("NewRebellionsInfoProvider(): PCI Address: %s, Device ID: %s", pciAddress, deviceId)
+		return &rebellionsInfoProvider{
+			driver:   driver,
+			deviceID: deviceId,
+		}
+	}
+
 	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciAddress)
 	poolsFile, err := os.ReadFile(poolsFilePath)
 	if err != nil {
@@ -62,11 +81,21 @@ func (rp *rebellionsInfoProvider) GetDeviceSpecs() []*pluginapi.DeviceSpec {
 		HostPath:      devicePath,
 		ContainerPath: devicePath,
 		Permissions:   "rw",
-	}, &pluginapi.DeviceSpec{
-		HostPath:      RsdNode,
-		ContainerPath: RsdNode,
-		Permissions:   "rw",
 	})
+	if rp.driver != "vfio-pci" {
+		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
+			HostPath:      RsdNode,
+			ContainerPath: RsdNode,
+			Permissions:   "rw",
+		})
+	} else {
+		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
+			HostPath:      VFIOPath,
+			ContainerPath: VFIOPath,
+			Permissions:   "rw",
+		})
+	}
+
 	return devSpecs
 }
 
@@ -79,10 +108,23 @@ func (rp *rebellionsInfoProvider) GetEnvVal() types.AdditionalInfo {
 
 func (rp *rebellionsInfoProvider) GetMounts() []*pluginapi.Mount {
 	mounts := make([]*pluginapi.Mount, 0)
-	mounts = append(mounts, &pluginapi.Mount{
-		HostPath:      "/usr/local/bin/rbln-stat",
-		ContainerPath: "/usr/bin/rbln-stat",
-		ReadOnly:      true,
-	})
+	if rp.driver != "vfio-pci" {
+		mounts = append(mounts, &pluginapi.Mount{
+			HostPath:      "/usr/local/bin/rbln-stat",
+			ContainerPath: "/usr/bin/rbln-stat",
+			ReadOnly:      true,
+		})
+	}
 	return mounts
+}
+
+func getIommuGroup(linkPath, pciAddress string) (string, error) {
+	// read the symlink to get the iommu group
+	path, err := os.Readlink(linkPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read iommu_group for device %s: %v", pciAddress, err)
+	}
+	// get iommu group name from the path
+	_, group := filepath.Split(path)
+	return group, nil
 }
