@@ -60,12 +60,6 @@ jobs:
 
       - name: Go test with coverage
         run: make test-coverage
-      
-      - name: Coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: test/coverage/cover.out
 
   golangci:
     name: Golangci-lint

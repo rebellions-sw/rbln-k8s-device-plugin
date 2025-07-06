@@ -32,6 +32,7 @@ var (
 	//nolint: unused
 	sysBusAux = "/sys/bus/auxiliary/devices"
 	devDir    = "/dev"
+	pciRegex  = regexp.MustCompile(`^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f]$`)
 )
 
 const (
@@ -571,4 +572,79 @@ func GetPKey(pciAddr string) (string, error) {
 	}
 
 	return pKey, nil
+}
+
+// GetPCIBridge returns the 2nd PCI bridge in the hierarchy (0=root-port, 1=1st bridge, 2=2nd bridge)
+func GetPCIBridge(pciAddr string) (string, error) {
+	const secondBridgeIndex = 2
+
+	// Resolve the real sysfs path of the PCI device
+	devicePath := filepath.Join(sysBusPci, pciAddr)
+	realPath, err := filepath.EvalSymlinks(devicePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve PCI device symlinks: %w", err)
+	}
+
+	pciBridge, err := ExtractPCIBridgeFromPath(realPath, secondBridgeIndex)
+	if err != nil {
+		return "", err
+	}
+
+	// Verify that the extracted PCI address is actually a bridge
+	if err := VerifyPCIBridge(pciBridge); err != nil {
+		return "", fmt.Errorf("PCI address %s is not a bridge: %w", pciBridge, err)
+	}
+
+	return pciBridge, nil
+}
+
+// ExtractPCIBridgeFromPath extracts the PCI bridge at the specified index from a realpath
+func ExtractPCIBridgeFromPath(realPath string, bridgeIndex int) (string, error) {
+	// Collect all PCI addresses in the path
+	var pciAddresses []string
+	for _, part := range strings.Split(realPath, string(os.PathSeparator)) {
+		if pciRegex.MatchString(part) {
+			pciAddresses = append(pciAddresses, part)
+		}
+	}
+
+	// Check that we have at least the required number of entries
+	if len(pciAddresses) <= bridgeIndex {
+		return "", fmt.Errorf(
+			"PCI hierarchy does not contain bridge at index %d (found only %d elements)",
+			bridgeIndex, len(pciAddresses),
+		)
+	}
+
+	return pciAddresses[bridgeIndex], nil
+}
+
+// VerifyPCIBridge checks if the given PCI address is actually a PCI-to-PCI bridge device
+func VerifyPCIBridge(pciAddr string) error {
+	const (
+		bridgeClassCode    = 0x06
+		bridgeSubclassCode = 0x04
+		classShift         = 16
+		subclassShift      = 8
+		subclassMask       = 0xFF
+	)
+
+	classPath := filepath.Join(sysBusPci, pciAddr, "class")
+	classData, err := os.ReadFile(classPath)
+	if err != nil {
+		return fmt.Errorf("failed to read PCI class for %s: %w", pciAddr, err)
+	}
+
+	classStr := strings.TrimSpace(string(classData))
+	classValue, err := strconv.ParseUint(classStr, 0, 32)
+	if err != nil {
+		return fmt.Errorf("failed to parse class code %q for %s: %w", classStr, pciAddr, err)
+	}
+
+	cls := byte(classValue >> classShift)
+	sub := byte(classValue >> subclassShift & subclassMask)
+	if cls != bridgeClassCode || sub != bridgeSubclassCode {
+		return fmt.Errorf("device %s is not a PCI-to-PCI bridge (class=0x%02x, subclass=0x%02x)", pciAddr, cls, sub)
+	}
+	return nil
 }
