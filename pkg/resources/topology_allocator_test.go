@@ -1,187 +1,225 @@
-package resources_test
+package resources
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
 )
 
 var _ = Describe("TopologyAllocator", func() {
-	var (
-		// Test fixture data based on the provided topology
-		availableDeviceIDs  []string
-		mockDeviceNUMANodes map[string]int
-		mockDeviceBridges   map[string]string
-	)
 
-	BeforeEach(func() {
-		availableDeviceIDs = []string{
-			// NUMA node 0, bridge 0000:02:00.0
-			"0000:08:00.0", "0000:07:00.0", "0000:06:00.0", "0000:05:00.0",
-			// NUMA node 0, bridge 0000:02:01.0
-			"0000:0c:00.0", "0000:0f:00.0", "0000:0e:00.0", "0000:0d:00.0",
-			// NUMA node 0, bridge 0000:42:01.0
-			"0000:49:00.0", "0000:48:00.0", "0000:47:00.0", "0000:46:00.0",
-			// NUMA node 0, bridge 0000:42:02.0
-			"0000:4f:00.0", "0000:4e:00.0", "0000:50:00.0", "0000:4d:00.0",
-			// NUMA node 1, bridge 0000:c2:00.0
-			"0000:c8:00.0", "0000:c7:00.0", "0000:c6:00.0", "0000:c5:00.0",
-			// NUMA node 1, bridge 0000:c2:01.0
-			"0000:cd:00.0", "0000:cc:00.0", "0000:cf:00.0", "0000:ce:00.0",
-			// NUMA node 1, bridge 0000:82:00.0
-			"0000:85:00.0", "0000:88:00.0", "0000:87:00.0", "0000:86:00.0",
-			// NUMA node 1, bridge 0000:82:01.0
-			"0000:8e:00.0", "0000:8d:00.0", "0000:8c:00.0", "0000:8f:00.0",
+	// Helper function to create test topology with specified bridge capacities
+	createTestTopologyWithBridges := func(bridgeCapacities []int) *TopologyAllocator {
+		topology := &NodeTopology{
+			NUMANodes:            make(map[NUMANode]*NUMATopology),
+			PciBridgeDeviceCount: 10,  // Default bridge capacity
+			NumaNodeDeviceCount:  100, // Large enough to not interfere with tests
 		}
 
-		mockDeviceNUMANodes = map[string]int{
-			// NUMA node 0 devices
-			"0000:08:00.0": 0, "0000:07:00.0": 0, "0000:06:00.0": 0, "0000:05:00.0": 0,
-			"0000:0c:00.0": 0, "0000:0f:00.0": 0, "0000:0e:00.0": 0, "0000:0d:00.0": 0,
-			"0000:49:00.0": 0, "0000:48:00.0": 0, "0000:47:00.0": 0, "0000:46:00.0": 0,
-			"0000:4f:00.0": 0, "0000:4e:00.0": 0, "0000:50:00.0": 0, "0000:4d:00.0": 0,
-			// NUMA node 1 devices
-			"0000:c8:00.0": 1, "0000:c7:00.0": 1, "0000:c6:00.0": 1, "0000:c5:00.0": 1,
-			"0000:cd:00.0": 1, "0000:cc:00.0": 1, "0000:cf:00.0": 1, "0000:ce:00.0": 1,
-			"0000:85:00.0": 1, "0000:88:00.0": 1, "0000:87:00.0": 1, "0000:86:00.0": 1,
-			"0000:8e:00.0": 1, "0000:8d:00.0": 1, "0000:8c:00.0": 1, "0000:8f:00.0": 1,
+		numaTopology := &NUMATopology{
+			PCIBridges: make(map[BridgeID]*PCIBridgeGroup),
 		}
 
-		mockDeviceBridges = map[string]string{
-			// NUMA node 0, bridge 0000:02:00.0
-			"0000:08:00.0": "0000:02:00.0", "0000:07:00.0": "0000:02:00.0",
-			"0000:06:00.0": "0000:02:00.0", "0000:05:00.0": "0000:02:00.0",
-			// NUMA node 0, bridge 0000:02:01.0
-			"0000:0c:00.0": "0000:02:01.0", "0000:0f:00.0": "0000:02:01.0",
-			"0000:0e:00.0": "0000:02:01.0", "0000:0d:00.0": "0000:02:01.0",
-			// NUMA node 0, bridge 0000:42:01.0
-			"0000:49:00.0": "0000:42:01.0", "0000:48:00.0": "0000:42:01.0",
-			"0000:47:00.0": "0000:42:01.0", "0000:46:00.0": "0000:42:01.0",
-			// NUMA node 0, bridge 0000:42:02.0
-			"0000:4f:00.0": "0000:42:02.0", "0000:4e:00.0": "0000:42:02.0",
-			"0000:50:00.0": "0000:42:02.0", "0000:4d:00.0": "0000:42:02.0",
-			// NUMA node 1, bridge 0000:c2:00.0
-			"0000:c8:00.0": "0000:c2:00.0", "0000:c7:00.0": "0000:c2:00.0",
-			"0000:c6:00.0": "0000:c2:00.0", "0000:c5:00.0": "0000:c2:00.0",
-			// NUMA node 1, bridge 0000:c2:01.0
-			"0000:cd:00.0": "0000:c2:01.0", "0000:cc:00.0": "0000:c2:01.0",
-			"0000:cf:00.0": "0000:c2:01.0", "0000:ce:00.0": "0000:c2:01.0",
-			// NUMA node 1, bridge 0000:82:00.0
-			"0000:85:00.0": "0000:82:00.0", "0000:88:00.0": "0000:82:00.0",
-			"0000:87:00.0": "0000:82:00.0", "0000:86:00.0": "0000:82:00.0",
-			// NUMA node 1, bridge 0000:82:01.0
-			"0000:8e:00.0": "0000:82:01.0", "0000:8d:00.0": "0000:82:01.0",
-			"0000:8c:00.0": "0000:82:01.0", "0000:8f:00.0": "0000:82:01.0",
-		}
-	})
+		deviceCounter := 0
+		for bridgeIdx, capacity := range bridgeCapacities {
+			bridgeID := BridgeID(fmt.Sprintf("bridge%d", bridgeIdx))
+			deviceIDs := make([]string, capacity)
 
-	// Create a test topology allocator with mocked data
-	createTestTopologyAllocator := func(deviceIDs []string) *resources.TopologyAllocator {
-		topology := &resources.NodeTopology{
-			NUMANodes: make(map[resources.NUMANode]*resources.NUMATopology),
-		}
-
-		for _, deviceID := range deviceIDs {
-			numaNode := mockDeviceNUMANodes[deviceID]
-			pciBridge := mockDeviceBridges[deviceID]
-
-			if _, exists := topology.NUMANodes[resources.NUMANode(numaNode)]; !exists {
-				topology.NUMANodes[resources.NUMANode(numaNode)] = &resources.NUMATopology{
-					PCIBridges: make(map[resources.BridgeID]*resources.PCIBridgeGroup),
-				}
+			for i := 0; i < capacity; i++ {
+				deviceIDs[i] = fmt.Sprintf("device%d", deviceCounter)
+				deviceCounter++
 			}
 
-			if _, exists := topology.NUMANodes[resources.NUMANode(numaNode)].PCIBridges[resources.BridgeID(pciBridge)]; !exists {
-				topology.NUMANodes[resources.NUMANode(numaNode)].PCIBridges[resources.BridgeID(pciBridge)] = &resources.PCIBridgeGroup{
-					DeviceIDs: make([]string, 0),
-				}
+			numaTopology.PCIBridges[bridgeID] = &PCIBridgeGroup{
+				DeviceIDs: deviceIDs,
 			}
-
-			topology.NUMANodes[resources.NUMANode(numaNode)].PCIBridges[resources.BridgeID(pciBridge)].DeviceIDs = append(
-				topology.NUMANodes[resources.NUMANode(numaNode)].PCIBridges[resources.BridgeID(pciBridge)].DeviceIDs,
-				deviceID,
-			)
 		}
 
-		return &resources.TopologyAllocator{NodeTopology: topology}
+		topology.NUMANodes[NUMANode(0)] = numaTopology
+
+		return &TopologyAllocator{NodeTopology: topology}
 	}
 
-	Describe("SelectDevices", func() {
-		Context("when devices are available on the same PCI Bridge", func() {
-			It("should select devices from the same bridge for allocation size 3", func() {
-				allocator := createTestTopologyAllocator(availableDeviceIDs)
+	// Helper function to get bridge assignment of selected devices
+	getBridgeAssignment := func(allocator *TopologyAllocator, selectedDevices []string) map[string]int {
+		bridgeAssignment := make(map[string]int)
 
-				result, err := allocator.SelectDevices([]string{}, 3)
-
-				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(HaveLen(3))
-
-				// Verify all selected devices are from the same bridge
-				// Since we have 4 devices per bridge, allocation size 3 should work
-				firstDeviceBridge := mockDeviceBridges[result[0]]
-				for _, deviceID := range result {
-					Expect(mockDeviceBridges[deviceID]).To(Equal(firstDeviceBridge))
+		for numaIdx, numa := range allocator.NodeTopology.NUMANodes {
+			for bridgeID, bridge := range numa.PCIBridges {
+				for _, deviceID := range bridge.DeviceIDs {
+					for _, selectedDevice := range selectedDevices {
+						if deviceID == selectedDevice {
+							bridgeKey := fmt.Sprintf("numa%d_bridge%s", numaIdx, bridgeID)
+							bridgeAssignment[bridgeKey]++
+						}
+					}
 				}
-			})
+			}
+		}
+		return bridgeAssignment
+	}
 
-			It("should select devices from the same bridge for allocation size equal to bridge capacity", func() {
-				allocator := createTestTopologyAllocator(availableDeviceIDs)
+	Describe("Bridge Minimization", func() {
+		Context("when allocation can be satisfied with fewer bridges", func() {
+			It("should prefer single bridge over multiple bridges for allocation size 4", func() {
+				// Bridge capacities: [4, 3, 2, 1] - should select bridge0 (4 devices)
+				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
 				result, err := allocator.SelectDevices([]string{}, 4)
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(4))
 
-				// Verify all selected devices are from the same bridge
-				firstDeviceBridge := mockDeviceBridges[result[0]]
-				for _, deviceID := range result {
-					Expect(mockDeviceBridges[deviceID]).To(Equal(firstDeviceBridge))
-				}
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(1), "Should use only 1 bridge")
+
+				// Should use bridge0 which has exactly 4 devices
+				Expect(bridgeAssignment["numa0_bridgebridge0"]).To(Equal(4))
+			})
+
+			It("should prefer single bridge over multiple bridges for allocation size 3", func() {
+				// Bridge capacities: [4, 3, 2, 1] - should select bridge1
+				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
+
+				result, err := allocator.SelectDevices([]string{}, 3)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(3))
+
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(1), "Should use only 1 bridge")
+
+				Expect(bridgeAssignment["numa0_bridgebridge1"]).To(Equal(3))
 			})
 		})
 
-		Context("when devices are available on the same NUMA node but not on single bridge", func() {
-			It("should select devices from the same NUMA node for allocation size 10", func() {
-				allocator := createTestTopologyAllocator(availableDeviceIDs)
+		Context("when multiple bridges are required", func() {
+			It("should use minimum bridges for allocation size 6", func() {
+				// Bridge capacities: [4, 3, 2, 1] - should use 2 bridges: bridge0(4) + bridge2(2)
+				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 10)
+				result, err := allocator.SelectDevices([]string{}, 6)
 
 				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(HaveLen(10))
+				Expect(result).To(HaveLen(6))
 
-				// Verify all selected devices are from the same NUMA node
-				// Since we have 16 devices per NUMA node, allocation size 10 should work
-				firstDeviceNUMA := mockDeviceNUMANodes[result[0]]
-				for _, deviceID := range result {
-					Expect(mockDeviceNUMANodes[deviceID]).To(Equal(firstDeviceNUMA))
-				}
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(2), "Should use exactly 2 bridges")
+
+				Expect(bridgeAssignment["numa0_bridgebridge0"]).To(Equal(4))
+				Expect(bridgeAssignment["numa0_bridgebridge2"]).To(Equal(2))
 			})
 
-			It("should select devices from the same NUMA node for allocation size equal to NUMA node capacity", func() {
-				allocator := createTestTopologyAllocator(availableDeviceIDs)
+			It("should use optimal multiple bridge combination for allocation size 8", func() {
+				// Bridge capacities: [4, 3, 2, 1] - should use 3 bridges for size 8
+				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 16)
+				result, err := allocator.SelectDevices([]string{}, 8)
 
 				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(HaveLen(16))
+				Expect(result).To(HaveLen(8))
 
-				// Verify all selected devices are from the same NUMA node
-				firstDeviceNUMA := mockDeviceNUMANodes[result[0]]
-				for _, deviceID := range result {
-					Expect(mockDeviceNUMANodes[deviceID]).To(Equal(firstDeviceNUMA))
-				}
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(3), "Should use exactly 3 bridges")
+
+				// Verify allocation counts
+				Expect(bridgeAssignment["numa0_bridgebridge0"]).To(Equal(4))
+				Expect(bridgeAssignment["numa0_bridgebridge1"]).To(Equal(3))
+				Expect(bridgeAssignment["numa0_bridgebridge3"]).To(Equal(1))
+			})
+
+			It("should handle allocation size requiring all bridges", func() {
+				// Bridge capacities: [3, 2, 1] - for allocation size 6
+				allocator := createTestTopologyWithBridges([]int{3, 2, 1})
+
+				result, err := allocator.SelectDevices([]string{}, 6)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(6))
+
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(3), "Should use all 3 bridges")
+
+				Expect(bridgeAssignment["numa0_bridgebridge0"]).To(Equal(3))
+				Expect(bridgeAssignment["numa0_bridgebridge1"]).To(Equal(2))
+				Expect(bridgeAssignment["numa0_bridgebridge2"]).To(Equal(1))
 			})
 		})
+	})
 
-		Context("when insufficient devices are available for topology-aware allocation", func() {
-			It("should return error for allocation size 20", func() {
-				allocator := createTestTopologyAllocator(availableDeviceIDs)
+	Describe("Smallest Bridge Selection for Partial Allocation", func() {
+		Context("when same bridge count but different partial allocation choices", func() {
+			It("should prefer smaller bridge for partial allocation within same bridge count", func() {
+				// Bridge capacities: [3, 3, 2] - for allocation size 4
+				// Both options use 2 bridges:
+				// Option 1: bridge0(3) + bridge2(1/2) - 1 device remaining in bridge2 (smaller)
+				// Option 2: bridge1(3) + bridge2(1/2) - 1 device remaining in bridge2 (same)
+				// Since both have same pattern, algorithm should consistently pick one
+				allocator := createTestTopologyWithBridges([]int{3, 3, 2})
 
-				result, err := allocator.SelectDevices([]string{}, 20)
+				result, err := allocator.SelectDevices([]string{}, 4)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(4))
+
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+
+				// Should use exactly 2 bridges (minimum possible for size 4)
+				Expect(len(bridgeAssignment)).To(Equal(2), "Should use exactly 2 bridges")
+			})
+
+			It("should verify single bridge allocation when possible", func() {
+				// Bridge capacities: [5, 3, 2] - for allocation size 4
+				// Should prefer single bridge (bridge0) over multiple bridges
+				allocator := createTestTopologyWithBridges([]int{5, 3, 2})
+
+				result, err := allocator.SelectDevices([]string{}, 4)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(4))
+
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+
+				// Should use only 1 bridge (bridge minimization priority)
+				Expect(len(bridgeAssignment)).To(Equal(1), "Should use only 1 bridge due to bridge minimization")
+
+				// Should use bridge0 with 4 devices allocated
+				Expect(bridgeAssignment["numa0_bridgebridge0"]).To(Equal(4))
+			})
+		})
+	})
+
+	Describe("Complex Scenarios", func() {
+		Context("with various bridge capacity distributions", func() {
+			It("should handle uniform capacity bridges efficiently", func() {
+				// Bridge capacities: [2, 2, 2, 2] - for allocation size 5
+				// Should use 3 bridges: 2+2+1
+				allocator := createTestTopologyWithBridges([]int{2, 2, 2, 2})
+
+				result, err := allocator.SelectDevices([]string{}, 5)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(5))
+
+				bridgeAssignment := getBridgeAssignment(allocator, result)
+				Expect(len(bridgeAssignment)).To(Equal(3), "Should use exactly 3 bridges")
+			})
+		})
+	})
+
+	Describe("Error Scenarios", func() {
+		Context("when insufficient devices are available", func() {
+			It("should return error for allocation exceeding total capacity", func() {
+				// Bridge capacities: [3, 2, 1] - total 6 devices, request 8
+				allocator := createTestTopologyWithBridges([]int{3, 2, 1})
+
+				result, err := allocator.SelectDevices([]string{}, 8)
 
 				Expect(err).To(HaveOccurred())
 				Expect(result).To(BeNil())
-				Expect(err.Error()).To(ContainSubstring("insufficient devices for topology-aware allocation"))
+				// NUMA 노드 레벨에서 먼저 실패하므로 해당 에러 메시지 확인
+				Expect(err.Error()).To(ContainSubstring("no NUMA node with sufficient devices"))
 			})
 		})
 	})

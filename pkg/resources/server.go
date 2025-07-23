@@ -413,16 +413,24 @@ func (rs *resourceServer) selectPreferredDevices(availableDeviceIDs, mustInclude
 
 	glog.Infof("Rebellions NPU device pool detected, applying topology-aware allocation")
 
-	topologyAllocator, err := NewTopologyAllocator(availableDeviceIDs)
+	// Get product ID of the first device to determine device type
+	productID, err := rs.getDeviceProductID(availableDeviceIDs[0])
 	if err != nil {
-		glog.Errorf("Failed to create topology allocator: %v", err)
-		return nil, fmt.Errorf("failed to create topology allocator: %v", err)
+		glog.Errorf("Failed to get product ID for device %s: %v", availableDeviceIDs[0], err)
+		return nil, fmt.Errorf("failed to get product ID for device %s: %v", availableDeviceIDs[0], err)
 	}
 
-	result, err := topologyAllocator.SelectDevices(mustIncludeDeviceIDs, allocationSize)
+	// Create allocator using factory
+	allocator, err := CreateAllocator(availableDeviceIDs, productID)
+	if err != nil {
+		glog.Errorf("Failed to create allocator: %v", err)
+		return nil, err
+	}
+
+	result, err := allocator.SelectDevices(mustIncludeDeviceIDs, allocationSize)
 	if err != nil {
 		glog.Errorf("Failed to select devices: %v", err)
-		return nil, fmt.Errorf("failed to select devices: %v", err)
+		return nil, err
 	}
 
 	return result, nil
@@ -453,4 +461,18 @@ func (rs *resourceServer) getDeviceVendorID(pciAddr string) (string, error) {
 	vendorStr = strings.TrimPrefix(vendorStr, "0x")
 
 	return vendorStr, nil
+}
+
+// getDeviceProductID returns the product ID for a given PCI device
+func (rs *resourceServer) getDeviceProductID(pciAddr string) (string, error) {
+	devicePath := filepath.Join(sysBusPci, pciAddr, "device")
+	deviceData, err := os.ReadFile(devicePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read device/product ID: %w", err)
+	}
+
+	deviceStr := strings.TrimSpace(string(deviceData))
+	deviceStr = strings.TrimPrefix(deviceStr, "0x")
+
+	return deviceStr, nil
 }

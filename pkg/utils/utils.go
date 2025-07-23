@@ -575,9 +575,7 @@ func GetPKey(pciAddr string) (string, error) {
 }
 
 // GetPCIBridge returns the 2nd PCI bridge in the hierarchy (0=root-port, 1=1st bridge, 2=2nd bridge)
-func GetPCIBridge(pciAddr string) (string, error) {
-	const secondBridgeIndex = 2
-
+func GetPCIBridge(pciAddr string, bridgeIndex int) (string, error) {
 	// Resolve the real sysfs path of the PCI device
 	devicePath := filepath.Join(sysBusPci, pciAddr)
 	realPath, err := filepath.EvalSymlinks(devicePath)
@@ -585,7 +583,7 @@ func GetPCIBridge(pciAddr string) (string, error) {
 		return "", fmt.Errorf("failed to resolve PCI device symlinks: %w", err)
 	}
 
-	pciBridge, err := ExtractPCIBridgeFromPath(realPath, secondBridgeIndex)
+	pciBridge, err := ExtractPCIBridgeFromPath(realPath, bridgeIndex)
 	if err != nil {
 		return "", err
 	}
