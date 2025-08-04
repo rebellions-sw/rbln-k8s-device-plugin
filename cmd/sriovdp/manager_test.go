@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	CDImocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi/mocks"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
@@ -30,7 +31,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestSriovdp(t *testing.T) {
@@ -379,7 +379,7 @@ var _ = Describe("Resource manager", func() {
 						mockedServer.On("Init").Return(fmt.Errorf("fake error"))
 
 						mockedRf := &mocks.ResourceFactory{}
-						mockedRf.On("GetResourceServer", &mocks.ResourcePool{}).
+					    mockedRf.On("GetResourceServer", &mocks.ResourcePool{}, mock.AnythingOfType("*types.ResourceConfig")).
 							Return(mockedServer, nil)
 					})
 					It("should not return an error", func() {
@@ -408,7 +408,7 @@ var _ = Describe("Resource manager", func() {
 
 					mockedRf := &mocks.ResourceFactory{}
 					mockedRf.On("GetResourcePool", rc, devs).Return(rp, nil).
-						On("GetResourceServer", rp).Return(mockedServer, nil)
+						On("GetResourceServer", rp, rc).Return(mockedServer, nil)
 					dev.On("GetDeviceID").Return("0000:01:10.0")
 					dp.On("GetDevices", rc, 0).Return(devs)
 					rm := &resourceManager{

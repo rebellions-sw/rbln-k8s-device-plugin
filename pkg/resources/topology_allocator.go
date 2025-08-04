@@ -17,7 +17,8 @@ type Allocator interface {
 }
 
 type TopologyAllocator struct {
-	NodeTopology *NodeTopology
+	NodeTopology   *NodeTopology
+	AllowCrossNuma bool
 }
 
 // PCIBridgeGroup represents devices connected to the same PCI bridge
@@ -63,6 +64,7 @@ func (a *KubeletDelegatingAllocator) SelectDevices(mustIncludeDeviceIDs []string
 func NewTopologyAllocator(
 	availableDeviceIDs []string,
 	bridgeIndex, pciBridgeDeviceCount, numaNodeDeviceCount int,
+	allowCrossNuma bool,
 ) (*TopologyAllocator, error) {
 	topology := &NodeTopology{
 		NUMANodes:            make(map[NUMANode]*NUMATopology),
@@ -96,21 +98,20 @@ func NewTopologyAllocator(
 		)
 	}
 
-	return &TopologyAllocator{NodeTopology: topology}, nil
+	return &TopologyAllocator{NodeTopology: topology, AllowCrossNuma: allowCrossNuma}, nil
 }
 
 func selectOptimalNUMANode(ta *TopologyAllocator, allocationSize int) (*NUMATopology, error) {
 	var selectedNUMA *NUMATopology
-	minDeviceCountDiff := int(^uint(0) >> 1)
+	maxDeviceCount := -1
 
 	for _, numaNode := range ta.NodeTopology.NUMANodes {
 		numaDevices := ta.getAllDevicesFromNUMA(numaNode)
 		availableDeviceCount := len(numaDevices)
 
 		if availableDeviceCount >= allocationSize {
-			deviceCountDiff := availableDeviceCount - allocationSize
-			if deviceCountDiff < minDeviceCountDiff {
-				minDeviceCountDiff = deviceCountDiff
+			if availableDeviceCount > maxDeviceCount {
+				maxDeviceCount = availableDeviceCount
 				selectedNUMA = numaNode
 			}
 		}
@@ -138,12 +139,9 @@ func prepareBridgesSortedByCapacity(selectedNUMA *NUMATopology) []bridgeInfo {
 }
 
 func (ta *TopologyAllocator) SelectDevices(mustIncludeDeviceIDs []string, allocationSize int) ([]string, error) {
-	if allocationSize > ta.NodeTopology.NumaNodeDeviceCount {
-		return nil, fmt.Errorf(
-			"allocation size %d exceeds NUMA node capacity %d, topology-aware allocation not beneficial, kubelet should handle allocation",
-			allocationSize,
-			ta.NodeTopology.NumaNodeDeviceCount,
-		)
+	if allocationSize > ta.NodeTopology.NumaNodeDeviceCount || ta.AllowCrossNuma {
+		glog.Infof("Cross-NUMA allocation triggered for %d devices (single NUMA capacity: %d)", allocationSize, ta.NodeTopology.NumaNodeDeviceCount)
+		return ta.selectDevicesFromMultipleNUMA(allocationSize), nil
 	}
 
 	optimalNUMA, err := selectOptimalNUMANode(ta, allocationSize)
@@ -151,22 +149,94 @@ func (ta *TopologyAllocator) SelectDevices(mustIncludeDeviceIDs []string, alloca
 		return nil, err
 	}
 
-	glog.Infof("Selected NUMA node with %d free devices for allocation of %d", len(ta.getAllDevicesFromNUMA(optimalNUMA)), allocationSize)
+	return ta.selectDevicesFromNUMA(optimalNUMA, allocationSize), nil
+}
 
-	bridgeList := prepareBridgesSortedByCapacity(optimalNUMA)
+// selectDevicesFromNUMA selects devices from a specific NUMA node with the given allocation size
+func (ta *TopologyAllocator) selectDevicesFromNUMA(numaTopology *NUMATopology, allocationSize int) []string {
+	glog.Infof("Selected NUMA node with %d free devices for allocation of %d", len(ta.getAllDevicesFromNUMA(numaTopology)), allocationSize)
+
+	bridgeList := prepareBridgesSortedByCapacity(numaTopology)
 
 	glog.Infof("Starting optimal allocation: need %d devices from %d bridges", allocationSize, len(bridgeList))
 
 	allocationResult := findOptimalBridgeAllocation(bridgeList, allocationSize)
-	if allocationResult == nil {
-		return nil, fmt.Errorf("optimal allocation failed: no valid bridge combination found")
-	}
 
 	glog.Infof("Selecting Devices completed: selected devices: %v", allocationResult.selectedDevices)
 
-	return allocationResult.selectedDevices, nil
+	return allocationResult.selectedDevices
 }
 
+// selectDevicesFromMultipleNUMA allocates devices across multiple NUMA nodes, prioritizing nodes with fewer devices
+func (ta *TopologyAllocator) selectDevicesFromMultipleNUMA(allocationSize int) []string {
+	glog.Infof("Starting cross-NUMA allocation for %d devices", allocationSize)
+
+	// Get all NUMA nodes sorted by device count (descending - largest first)
+	sortedNUMANodes := ta.getNUMANodesSortedByDeviceCount()
+
+	var allSelectedDevices []string
+	remainingAllocation := allocationSize
+
+	for _, numaEntry := range sortedNUMANodes {
+		if remainingAllocation <= 0 {
+			break
+		}
+
+		allocationFromThisNUMA := min(remainingAllocation, numaEntry.deviceCount)
+
+		glog.Infof("Allocating %d devices from NUMA node %d (has %d available)",
+			allocationFromThisNUMA, numaEntry.numaNode, numaEntry.deviceCount)
+
+		devices := ta.selectDevicesFromNUMA(numaEntry.topology, allocationFromThisNUMA)
+
+		allSelectedDevices = append(allSelectedDevices, devices...)
+		remainingAllocation -= len(devices)
+
+		glog.Infof("Successfully allocated %d devices from NUMA node %d, remaining: %d",
+			len(devices), numaEntry.numaNode, remainingAllocation)
+	}
+
+	glog.Infof("Cross-NUMA allocation completed: selected %d devices across multiple NUMA nodes", len(allSelectedDevices))
+	return allSelectedDevices
+}
+
+// numaNodeEntry represents a NUMA node with its device count for sorting
+type numaNodeEntry struct {
+	numaNode    NUMANode
+	topology    *NUMATopology
+	deviceCount int
+}
+
+// getNUMANodesSortedByDeviceCount returns NUMA nodes sorted by device count (descending)
+func (ta *TopologyAllocator) getNUMANodesSortedByDeviceCount() []numaNodeEntry {
+	var numaEntries []numaNodeEntry
+
+	for numaNode, topology := range ta.NodeTopology.NUMANodes {
+		deviceCount := len(ta.getAllDevicesFromNUMA(topology))
+		numaEntries = append(numaEntries, numaNodeEntry{
+			numaNode:    numaNode,
+			topology:    topology,
+			deviceCount: deviceCount,
+		})
+	}
+
+	// Sort by device count (descending - nodes with more devices first)
+	sort.Slice(numaEntries, func(i, j int) bool {
+		return numaEntries[i].deviceCount > numaEntries[j].deviceCount
+	})
+
+	return numaEntries
+}
+
+// min returns the minimum of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// getAllDevicesFromNUMA returns all device IDs from a NUMA node
 func (ta *TopologyAllocator) getAllDevicesFromNUMA(numaNode *NUMATopology) []string {
 	var allDeviceIDs []string
 	for _, bridgeGroup := range numaNode.PCIBridges {

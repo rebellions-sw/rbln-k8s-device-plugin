@@ -9,36 +9,55 @@ import (
 
 var _ = Describe("TopologyAllocator", func() {
 
-	// Helper function to create test topology with specified bridge capacities
-	createTestTopologyWithBridges := func(bridgeCapacities []int) *TopologyAllocator {
+	// Unified helper function to create test topology
+	createTestTopology := func(numaConfigs map[int][]int, pciBridgeDeviceCount, numaNodeDeviceCount int) *TopologyAllocator {
 		topology := &NodeTopology{
 			NUMANodes:            make(map[NUMANode]*NUMATopology),
-			PciBridgeDeviceCount: 10,  // Default bridge capacity
-			NumaNodeDeviceCount:  100, // Large enough to not interfere with tests
-		}
-
-		numaTopology := &NUMATopology{
-			PCIBridges: make(map[BridgeID]*PCIBridgeGroup),
+			PciBridgeDeviceCount: pciBridgeDeviceCount,
+			NumaNodeDeviceCount:  numaNodeDeviceCount,
 		}
 
 		deviceCounter := 0
-		for bridgeIdx, capacity := range bridgeCapacities {
-			bridgeID := BridgeID(fmt.Sprintf("bridge%d", bridgeIdx))
-			deviceIDs := make([]string, capacity)
-
-			for i := 0; i < capacity; i++ {
-				deviceIDs[i] = fmt.Sprintf("device%d", deviceCounter)
-				deviceCounter++
+		for numaIdx, bridgeCapacities := range numaConfigs {
+			numaTopology := &NUMATopology{
+				PCIBridges: make(map[BridgeID]*PCIBridgeGroup),
 			}
 
-			numaTopology.PCIBridges[bridgeID] = &PCIBridgeGroup{
-				DeviceIDs: deviceIDs,
+			for bridgeIdx, capacity := range bridgeCapacities {
+				bridgeID := BridgeID(fmt.Sprintf("bridge%d", bridgeIdx))
+				deviceIDs := make([]string, capacity)
+
+				for i := 0; i < capacity; i++ {
+					if len(numaConfigs) == 1 {
+						// Single NUMA mode - use simple device ID
+						deviceIDs[i] = fmt.Sprintf("device%d", deviceCounter)
+					} else {
+						// Multi-NUMA mode - include NUMA index in device ID
+						deviceIDs[i] = fmt.Sprintf("numa%d_device%d", numaIdx, deviceCounter)
+					}
+					deviceCounter++
+				}
+
+				numaTopology.PCIBridges[bridgeID] = &PCIBridgeGroup{
+					DeviceIDs: deviceIDs,
+				}
 			}
+
+			topology.NUMANodes[NUMANode(numaIdx)] = numaTopology
 		}
 
-		topology.NUMANodes[NUMANode(0)] = numaTopology
-
 		return &TopologyAllocator{NodeTopology: topology}
+	}
+
+	// Convenience wrapper for single NUMA tests (backward compatibility)
+	createTestTopologyWithBridges := func(bridgeCapacities []int) *TopologyAllocator {
+		numaConfigs := map[int][]int{0: bridgeCapacities}
+		return createTestTopology(numaConfigs, 10, 100)
+	}
+
+	// Convenience wrapper for multi-NUMA tests
+	createTestTopologyWithMultipleNUMA := func(numaConfigs map[int][]int) *TopologyAllocator {
+		return createTestTopology(numaConfigs, 10, 6) // NumaNodeDeviceCount를 6으로 변경
 	}
 
 	// Helper function to get bridge assignment of selected devices
@@ -204,6 +223,158 @@ var _ = Describe("TopologyAllocator", func() {
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
 				Expect(len(bridgeAssignment)).To(Equal(3), "Should use exactly 3 bridges")
+			})
+		})
+	})
+
+	Describe("Cross-NUMA Allocation", func() {
+		// Helper function to count devices per NUMA node in result
+		countDevicesPerNUMA := func(selectedDevices []string) map[int]int {
+			numaCount := make(map[int]int)
+			for _, deviceID := range selectedDevices {
+				// Extract NUMA node index from device ID (numa0_device1 -> 0)
+				var numaIdx int
+				fmt.Sscanf(deviceID, "numa%d_device%d", &numaIdx, new(int))
+				numaCount[numaIdx]++
+			}
+			return numaCount
+		}
+
+		Context("when allocation size exceeds single NUMA capacity", func() {
+			It("should allocate across multiple NUMA nodes starting from smallest", func() {
+				// NUMA 0: 4 devices, NUMA 1: 6 devices, NUMA 2: 8 devices
+				// For allocation size 10 (> 8), should prioritize NUMA 0 (smallest) first
+				numaConfigs := map[int][]int{
+					0: {2, 2}, // NUMA 0: 4 devices total
+					1: {3, 3}, // NUMA 1: 6 devices total
+					2: {4, 4}, // NUMA 2: 8 devices total
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 10)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(10))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				// Should use all 4 devices from NUMA 0 (smallest), then 6 from NUMA 1
+				Expect(numaCount[2]).To(Equal(8), "Should use all devices from NUMA 2")
+				Expect(numaCount[1]).To(Equal(2), "Should use 2 devices from NUMA 1")
+				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+			})
+
+			It("should handle exact cross-NUMA allocation", func() {
+				// NUMA 0: 3 devices, NUMA 1: 5 devices
+				// For allocation size 8, should use all devices from both NUMA nodes
+				numaConfigs := map[int][]int{
+					0: {3}, // NUMA 0: 3 devices
+					1: {5}, // NUMA 1: 5 devices
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 8)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(8))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				Expect(numaCount[0]).To(Equal(3), "Should use all 3 devices from NUMA 0")
+				Expect(numaCount[1]).To(Equal(5), "Should use all 5 devices from NUMA 1")
+			})
+
+			It("should handle partial allocation from multiple NUMA nodes", func() {
+				// NUMA 0: 2 devices, NUMA 1: 4 devices, NUMA 2: 6 devices
+				// For allocation size 9, should use NUMA 0 (2) + NUMA 1 (4) + partial NUMA 2 (3)
+				numaConfigs := map[int][]int{
+					0: {2}, // NUMA 0: 2 devices
+					1: {4}, // NUMA 1: 4 devices
+					2: {6}, // NUMA 2: 6 devices
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 9)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(9))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				Expect(numaCount[2]).To(Equal(6), "Should use all 6 devices from NUMA 2")
+				Expect(numaCount[1]).To(Equal(3), "Should use 3 devices from NUMA 1")
+				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+			})
+
+			It("should handle allocation with uneven NUMA distribution", func() {
+				// NUMA 0: 1 device, NUMA 1: 3 devices, NUMA 2: 10 devices
+				// For allocation size 12, should use 1 + 3 + 6 devices (limited by NumaNodeDeviceCount=6)
+				numaConfigs := map[int][]int{
+					0: {1},    // NUMA 0: 1 device
+					1: {3},    // NUMA 1: 3 devices
+					2: {5, 5}, // NUMA 2: 10 devices
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 11)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(11))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				Expect(numaCount[2]).To(Equal(10), "Should use all 10 devices from NUMA 2")
+				Expect(numaCount[1]).To(Equal(1), "Should use all 1 device from NUMA 1")
+				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+			})
+
+			It("should verify device selection order within cross-NUMA allocation", func() {
+				// NUMA 0: 2 devices, NUMA 1: 5 devices
+				// For allocation size 7 (> 6), should prefer NUMA 0 entirely + 5 from NUMA 1
+				numaConfigs := map[int][]int{
+					0: {2}, // NUMA 0: 2 devices
+					1: {5}, // NUMA 1: 5 devices
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 7)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(7))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				// Should exhaust smaller NUMA first
+				Expect(numaCount[1]).To(Equal(5), "Should use all 5 devices from NUMA 1")
+				Expect(numaCount[0]).To(Equal(2), "Should use all 2 devices from NUMA 0")
+			})
+		})
+
+		Context("when single NUMA can satisfy allocation", func() {
+			It("should not trigger cross-NUMA allocation", func() {
+				// NUMA 0: 4 devices, NUMA 1: 6 devices
+				// For allocation size 5 (< 8), should use single NUMA allocation
+				numaConfigs := map[int][]int{
+					0: {4}, // NUMA 0: 4 devices
+					1: {6}, // NUMA 1: 6 devices
+				}
+				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
+
+				result, err := allocator.SelectDevices([]string{}, 5)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(5))
+
+				numaCount := countDevicesPerNUMA(result)
+
+				// Should use only one NUMA node (the one with 6 devices can satisfy 5)
+				usedNUMACount := 0
+				for _, count := range numaCount {
+					if count > 0 {
+						usedNUMACount++
+					}
+				}
+				Expect(usedNUMACount).To(Equal(1), "Should use only one NUMA node for allocation <= NumaNodeDeviceCount")
 			})
 		})
 	})
