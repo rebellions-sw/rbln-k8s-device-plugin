@@ -148,7 +148,7 @@ func (rm *resourceManager) initServers() error {
 			return err
 		}
 		// Create ResourceServer with this ResourcePool
-		s, err := rf.GetResourceServer(rPool)
+		s, err := rf.GetResourceServer(rPool, rc)
 		if err != nil {
 			glog.Errorf("initServers(): error creating ResourceServer: %v", err)
 			return err

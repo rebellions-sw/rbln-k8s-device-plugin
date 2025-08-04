@@ -36,6 +36,7 @@ import (
 
 type resourceServer struct {
 	resourcePool       types.ResourcePool
+	resourceConfig     *types.ResourceConfig
 	pluginWatch        bool
 	endPoint           string // Socket file
 	sockPath           string // Socket file path
@@ -56,7 +57,8 @@ const (
 )
 
 // NewResourceServer returns an instance of ResourceServer
-func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types.ResourcePool) types.ResourceServer {
+func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types.ResourcePool,
+	rc *types.ResourceConfig) types.ResourceServer {
 	sockName := fmt.Sprintf("%s_%s.%s", prefix, rp.GetResourceName(), suffix)
 	sockPath := filepath.Join(types.SockDir, sockName)
 	if !pluginWatch {
@@ -64,6 +66,7 @@ func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types
 	}
 	return &resourceServer{
 		resourcePool:       rp,
+		resourceConfig:     rc,
 		pluginWatch:        pluginWatch,
 		endPoint:           sockName,
 		sockPath:           sockPath,
@@ -237,6 +240,17 @@ func (rs *resourceServer) GetPreferredAllocation(ctx context.Context,
 		var resp *pluginapi.ContainerPreferredAllocationResponse
 		devices, err := rs.selectPreferredDevices(req.AvailableDeviceIDs, req.MustIncludeDeviceIDs, int(req.AllocationSize))
 		if err != nil {
+			// Check error type to determine if we should reject allocation entirely
+			if _, ok := err.(*CrossNUMAAllocationError); ok {
+				glog.Errorf(
+					"Cross-NUMA allocation not possible, rejecting allocation entirely. Request: %+v, Error: %v",
+					req, err,
+				)
+				// Return error to reject allocation completely
+				return nil, err
+			}
+
+			// For non-critical errors (like NonRebellionsDeviceError), fall back to kubelet
 			glog.Warningf(
 				"Could not determine preferred allocation for container, falling back to kubelet's default logic. Request: %+v, Error: %v",
 				req, err,
@@ -421,7 +435,7 @@ func (rs *resourceServer) selectPreferredDevices(availableDeviceIDs, mustInclude
 	}
 
 	// Create allocator using factory
-	allocator, err := CreateAllocator(availableDeviceIDs, productID)
+	allocator, err := CreateAllocator(availableDeviceIDs, productID, rs.resourceConfig)
 	if err != nil {
 		glog.Errorf("Failed to create allocator: %v", err)
 		return nil, err

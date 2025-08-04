@@ -11,6 +11,7 @@ data:
                 "resourceName": "ATOM",
                 "resourcePrefix": "rebellions.ai",
                 "deviceType": "accelerator",
+                "allowCrossNuma": true,
                 "selectors": {
                     "vendors": ["1eff"],
                     "devices": [

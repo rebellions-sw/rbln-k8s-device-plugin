@@ -52,13 +52,13 @@ func NewResourceFactory(prefix, suffix string, pluginWatch, useCdi bool) types.R
 }
 
 // GetResourceServer returns an instance of ResourceServer for a ResourcePool
-func (rf *resourceFactory) GetResourceServer(rp types.ResourcePool) (types.ResourceServer, error) {
+func (rf *resourceFactory) GetResourceServer(rp types.ResourcePool, rc *types.ResourceConfig) (types.ResourceServer, error) {
 	if rp != nil {
 		prefix := rf.endPointPrefix
 		if prefixOverride := rp.GetResourcePrefix(); prefixOverride != "" {
 			prefix = prefixOverride
 		}
-		return resources.NewResourceServer(prefix, rf.endPointSuffix, rf.pluginWatch, rf.useCdi, rp), nil
+		return resources.NewResourceServer(prefix, rf.endPointSuffix, rf.pluginWatch, rf.useCdi, rp, rc), nil
 	}
 	return nil, fmt.Errorf("factory: unable to get resource pool object")
 }

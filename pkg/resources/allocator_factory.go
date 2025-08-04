@@ -1,5 +1,7 @@
 package resources
 
+import "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+
 const (
 	AtomCA25BridgeIndex          = 2
 	AtomCA25PciBridgeDeviceCount = 4
@@ -10,7 +12,7 @@ const (
 	AtomCA22NumaNodeDeviceCount  = 8
 )
 
-func CreateAllocator(availableDeviceIDs []string, productID string) (Allocator, error) {
+func CreateAllocator(availableDeviceIDs []string, productID string, resourceConfig *types.ResourceConfig) (Allocator, error) {
 	var allocator Allocator
 	var err error
 
@@ -21,6 +23,7 @@ func CreateAllocator(availableDeviceIDs []string, productID string) (Allocator, 
 			AtomCA25BridgeIndex,
 			AtomCA25PciBridgeDeviceCount,
 			AtomCA25NumaNodeDeviceCount,
+			resourceConfig.AllowCrossNuma,
 		)
 		if err != nil {
 			return nil, err
@@ -32,6 +35,7 @@ func CreateAllocator(availableDeviceIDs []string, productID string) (Allocator, 
 			AtomCA22BridgeIndex,
 			AtomCA22PciBridgeDeviceCount,
 			AtomCA22NumaNodeDeviceCount,
+			resourceConfig.AllowCrossNuma,
 		)
 		if err != nil {
 			return nil, err

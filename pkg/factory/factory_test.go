@@ -634,7 +634,7 @@ var _ = Describe("Factory", func() {
 	Describe("getting resource server", func() {
 		Context("when resource pool is nil", func() {
 			f := factory.NewResourceFactory("fake", "fake", true, false)
-			rs, e := f.GetResourceServer(nil)
+			rs, e := f.GetResourceServer(nil, nil)
 			It("should fail", func() {
 				Expect(e).To(HaveOccurred())
 				Expect(rs).To(BeNil())
@@ -645,7 +645,7 @@ var _ = Describe("Factory", func() {
 			rp := mocks.ResourcePool{}
 			rp.On("GetResourcePrefix").Return("overridden").
 				On("GetResourceName").Return("fake")
-			rs, e := f.GetResourceServer(&rp)
+			rs, e := f.GetResourceServer(&rp, nil)
 			It("should not fail", func() {
 				Expect(e).NotTo(HaveOccurred())
 				Expect(rs).NotTo(BeNil())

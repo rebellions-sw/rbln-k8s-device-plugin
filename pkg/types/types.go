@@ -99,6 +99,7 @@ type ResourceConfig struct {
 	ResourceName    string                    `json:"resourceName"` // the resource name will be added with resource prefix in K8s api
 	DeviceType      DeviceType                `json:"deviceType,omitempty"`
 	ExcludeTopology bool                      `json:"excludeTopology,omitempty"`
+	AllowCrossNuma  bool                      `json:"allowCrossNuma,omitempty"`
 	Selectors       *json.RawMessage          `json:"selectors,omitempty"`
 	AdditionalInfo  map[string]AdditionalInfo `json:"additionalInfo,omitempty"`
 	SelectorObjs    []interface{}
@@ -172,7 +173,7 @@ type ResourceServer interface {
 
 // ResourceFactory is an interface to get instances of ResourcePool and ResourceServer
 type ResourceFactory interface {
-	GetResourceServer(ResourcePool) (ResourceServer, error)
+	GetResourceServer(ResourcePool, *ResourceConfig) (ResourceServer, error)
 	GetDefaultInfoProvider(string, string) []DeviceInfoProvider
 	GetSelector(string, []string) (DeviceSelector, error)
 	GetResourcePool(rc *ResourceConfig, deviceList []HostDevice) (ResourcePool, error)
