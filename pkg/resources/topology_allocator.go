@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/golang/glog"
@@ -117,14 +118,14 @@ func NewTopologyAllocator(
 
 func selectOptimalNUMANode(ta *TopologyAllocator, allocationSize int) (*NUMATopology, error) {
 	var selectedNUMA *NUMATopology
-	maxDeviceCount := -1
+	maxDeviceCount := math.MaxInt
 
 	for _, numaNode := range ta.NodeTopology.NUMANodes {
 		numaDevices := ta.getAllDevicesFromNUMA(numaNode)
 		availableDeviceCount := len(numaDevices)
 
 		if availableDeviceCount >= allocationSize {
-			if availableDeviceCount > maxDeviceCount {
+			if availableDeviceCount < maxDeviceCount {
 				maxDeviceCount = availableDeviceCount
 				selectedNUMA = numaNode
 			}
@@ -225,7 +226,7 @@ type numaNodeEntry struct {
 	deviceCount int
 }
 
-// getNUMANodesSortedByDeviceCount returns NUMA nodes sorted by device count (descending)
+// getNUMANodesSortedByDeviceCount returns NUMA nodes sorted by device count (ascending)
 func (ta *TopologyAllocator) getNUMANodesSortedByDeviceCount() []numaNodeEntry {
 	numaEntries := make([]numaNodeEntry, 0, len(ta.NodeTopology.NUMANodes))
 
@@ -238,9 +239,9 @@ func (ta *TopologyAllocator) getNUMANodesSortedByDeviceCount() []numaNodeEntry {
 		})
 	}
 
-	// Sort by device count (descending - nodes with more devices first)
+	// Sort by device count (ascending - nodes with less devices first)
 	sort.Slice(numaEntries, func(i, j int) bool {
-		return numaEntries[i].deviceCount > numaEntries[j].deviceCount
+		return numaEntries[i].deviceCount < numaEntries[j].deviceCount
 	})
 
 	return numaEntries
@@ -324,13 +325,13 @@ func generateBridgeCombinations(bridgeList []bridgeInfo, targetBridgeCount int) 
 }
 
 func simulateDeviceAllocation(selectedBridges []bridgeInfo, allocationSize int) *AllocationResult {
-	sort.Slice(selectedBridges, func(i, j int) bool {
-		return selectedBridges[i].free > selectedBridges[j].free
-	})
-
 	if isTotalCapacityExactMatch(selectedBridges, allocationSize) {
 		return handleExactCapacityMatch(selectedBridges)
 	}
+
+	sort.Slice(selectedBridges, func(i, j int) bool {
+		return selectedBridges[i].free > selectedBridges[j].free
+	})
 
 	return handlePartialBridgeAllocation(selectedBridges, allocationSize)
 }
@@ -407,5 +408,5 @@ func isAllocationBetter(candidateAllocation, currentBestAllocation *AllocationRe
 		return candidateAllocation.fullyFilledBridgeCount > currentBestAllocation.fullyFilledBridgeCount
 	}
 
-	return candidateAllocation.deviceRemaining > currentBestAllocation.deviceRemaining
+	return candidateAllocation.deviceRemaining < currentBestAllocation.deviceRemaining
 }

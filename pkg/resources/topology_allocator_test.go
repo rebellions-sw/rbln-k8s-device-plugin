@@ -266,9 +266,9 @@ var _ = Describe("TopologyAllocator", func() {
 				numaCount := countDevicesPerNUMA(result)
 
 				// Should use all 4 devices from NUMA 0 (smallest), then 6 from NUMA 1
-				Expect(numaCount[2]).To(Equal(8), "Should use all devices from NUMA 2")
-				Expect(numaCount[1]).To(Equal(2), "Should use 2 devices from NUMA 1")
-				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+				Expect(numaCount[0]).To(Equal(4), "Should use all devices from smallest NUMA 0 first")
+				Expect(numaCount[1]).To(Equal(6), "Should use remaining devices from NUMA 1")
+				Expect(numaCount[2]).To(Equal(0), "Should not use devices from largest NUMA 2")
 			})
 
 			It("should handle exact cross-NUMA allocation", func() {
@@ -308,9 +308,9 @@ var _ = Describe("TopologyAllocator", func() {
 
 				numaCount := countDevicesPerNUMA(result)
 
-				Expect(numaCount[2]).To(Equal(6), "Should use all 6 devices from NUMA 2")
-				Expect(numaCount[1]).To(Equal(3), "Should use 3 devices from NUMA 1")
-				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+				Expect(numaCount[0]).To(Equal(2), "Should use all devices from smallest NUMA 0 first")
+				Expect(numaCount[1]).To(Equal(4), "Should use all devices from next smallest NUMA 1")
+				Expect(numaCount[2]).To(Equal(3), "Should use remaining devices from largest NUMA 2")
 			})
 
 			It("should handle allocation with uneven NUMA distribution", func() {
@@ -330,9 +330,9 @@ var _ = Describe("TopologyAllocator", func() {
 
 				numaCount := countDevicesPerNUMA(result)
 
-				Expect(numaCount[2]).To(Equal(10), "Should use all 10 devices from NUMA 2")
-				Expect(numaCount[1]).To(Equal(1), "Should use all 1 device from NUMA 1")
-				Expect(numaCount[0]).To(Equal(0), "Should not use devices from NUMA 0")
+				Expect(numaCount[0]).To(Equal(1), "Should use all devices from smallest NUMA 0 first")
+				Expect(numaCount[1]).To(Equal(3), "Should use all devices from next smallest NUMA 1")
+				Expect(numaCount[2]).To(Equal(7), "Should use remaining devices from largest NUMA 2")
 			})
 
 			It("should verify device selection order within cross-NUMA allocation", func() {
