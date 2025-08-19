@@ -24,11 +24,11 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
 var _ = Describe("HostDevice", func() {

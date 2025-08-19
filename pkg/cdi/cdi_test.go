@@ -23,7 +23,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	cdiPkg "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi"
+	cdiPkg "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/cdi"
 )
 
 func TestCdi(t *testing.T) {

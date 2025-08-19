@@ -19,14 +19,14 @@ import (
 	"os"
 	"testing"
 
-	CDImocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi/mocks"
+	CDImocks "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/cdi/mocks"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

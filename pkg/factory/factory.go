@@ -20,13 +20,13 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/accelerator"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/auxnetdevice"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/netdevice"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/resources"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/auxnetdevice"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/netdevice"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/resources"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
 )
 
 type resourceFactory struct {

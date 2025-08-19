@@ -9,10 +9,10 @@ import (
 
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	CDImocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi/mocks"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	CDImocks "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/cdi/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

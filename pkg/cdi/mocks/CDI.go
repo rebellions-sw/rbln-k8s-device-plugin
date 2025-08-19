@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	types "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	types "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
 	mock "github.com/stretchr/testify/mock"
 )
 

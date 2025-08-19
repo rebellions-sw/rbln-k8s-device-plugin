@@ -26,12 +26,12 @@ import (
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/auxnetdevice"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	tmocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types/mocks"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/auxnetdevice"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	tmocks "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("AuxNetDeviceProvider", func() {

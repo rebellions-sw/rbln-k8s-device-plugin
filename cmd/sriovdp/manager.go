@@ -22,10 +22,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/jaypipes/ghw"
 
-	cdiPkg "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	cdiPkg "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/cdi"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
 const (

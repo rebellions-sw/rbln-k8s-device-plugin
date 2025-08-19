@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/infoprovider"
 )
 
 var _ = Describe("genericInfoProvider", func() {
