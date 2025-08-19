@@ -29,9 +29,9 @@ import (
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 
-	cdiPkg "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	cdiPkg "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/cdi"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/infoprovider"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
 )
 
 type resourceServer struct {

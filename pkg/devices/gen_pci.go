@@ -20,7 +20,7 @@ package devices
 import (
 	"github.com/jaypipes/ghw"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
 // GenPciDevice implementation

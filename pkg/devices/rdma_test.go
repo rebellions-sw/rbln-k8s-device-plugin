@@ -22,10 +22,10 @@ import (
 	. "github.com/onsi/gomega"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("RdmaSpec", func() {

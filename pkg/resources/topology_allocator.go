@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/golang/glog"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
 // Custom error types for allocation control

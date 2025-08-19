@@ -18,10 +18,10 @@ import (
 	"github.com/jaypipes/ghw"
 	"github.com/jaypipes/pcidb"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/accelerator"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/factory"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/accelerator"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/factory"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

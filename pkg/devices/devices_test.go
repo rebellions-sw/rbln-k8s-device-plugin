@@ -26,10 +26,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	nl "github.com/vishvananda/netlink"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 var _ = Describe("Devices", func() {

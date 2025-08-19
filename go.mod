@@ -1,4 +1,4 @@
-module github.com/rebellions-sw/rebel-k8s-device-plugin
+module github.com/rebellions-sw/rbln-k8s-device-plugin
 
 go 1.22.4
 

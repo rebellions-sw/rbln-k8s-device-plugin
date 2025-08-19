@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	nl "github.com/vishvananda/netlink"
 
-	mocks "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	mocks "github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 func assertShouldFail(err error, shouldFail bool) {

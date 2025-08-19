@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 const (

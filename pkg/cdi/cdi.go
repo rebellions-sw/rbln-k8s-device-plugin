@@ -26,7 +26,7 @@ import (
 	cdiSpecs "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/golang/glog"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
 )
 
 const cdiSpecPrefix = "sriov-dp-"

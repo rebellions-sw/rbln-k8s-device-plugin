@@ -24,10 +24,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
-	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils/mocks"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/devices"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils/mocks"
 )
 
 type fakeKvdpaDevice struct {
