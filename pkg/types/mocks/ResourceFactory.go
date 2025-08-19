@@ -173,9 +173,9 @@ func (_m *ResourceFactory) GetResourcePool(rc *types.ResourceConfig, deviceList 
 	return r0, r1
 }
 
-// GetResourceServer provides a mock function with given fields: _a0
-func (_m *ResourceFactory) GetResourceServer(_a0 types.ResourcePool) (types.ResourceServer, error) {
-	ret := _m.Called(_a0)
+// GetResourceServer provides a mock function with given fields: _a0, _a1
+func (_m *ResourceFactory) GetResourceServer(_a0 types.ResourcePool, _a1 *types.ResourceConfig) (types.ResourceServer, error) {
+	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetResourceServer")
@@ -183,19 +183,16 @@ func (_m *ResourceFactory) GetResourceServer(_a0 types.ResourcePool) (types.Reso
 
 	var r0 types.ResourceServer
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.ResourcePool) (types.ResourceServer, error)); ok {
-		return rf(_a0)
-	}
-	if rf, ok := ret.Get(0).(func(types.ResourcePool) types.ResourceServer); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(types.ResourcePool, *types.ResourceConfig) types.ResourceServer); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(types.ResourceServer)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.ResourcePool) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(types.ResourcePool, *types.ResourceConfig) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -119,8 +119,13 @@ func (rp *ResourcePoolImpl) GetEnvs(prefix string, deviceIDs []string) (map[stri
 
 	envs := make(map[string]string)
 
+	// construct PCI_RESOURCE_<prefix>_<resource-name> environment variable for kubevirt support
+	key := fmt.Sprintf("%s_%s_%s", "PCI_RESOURCE", prefix, rp.GetResourceName())
+	key = strings.ToUpper(strings.Replace(key, ".", "_", -1))
+	envs[key] = strings.Join(IDList, ",")
+
 	// construct PCIDEVICE_<prefix>_<resource-name> environment variable
-	key := fmt.Sprintf("%s_%s_%s", "PCIDEVICE", prefix, rp.GetResourceName())
+	key = fmt.Sprintf("%s_%s_%s", "PCIDEVICE", prefix, rp.GetResourceName())
 	key = strings.ToUpper(strings.Replace(key, ".", "_", -1))
 	envs[key] = strings.Join(IDList, ",")
 

@@ -598,6 +598,22 @@ var _ = Describe("In the utils package", func() {
 		Entry("valid deviceID string", "driver_name.type.123", "type"),
 	)
 
+	DescribeTable("extracting PCI bridge from path",
+		func(realPath string, bridgeIndex int, expected string, shouldFail bool) {
+			actual, err := ExtractPCIBridgeFromPath(realPath, bridgeIndex)
+			Expect(actual).To(Equal(expected))
+			assertShouldFail(err, shouldFail)
+		},
+		Entry("successfully extracting 2nd bridge from valid path",
+			"/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/0000:04:00.0/0000:05:00.0",
+			2, "0000:02:00.0", false,
+		),
+		Entry("failing to extract 2nd bridge from insufficient hierarchy",
+			"/sys/devices/pci0000:17/0000:17:02.0/0000:18:00.0",
+			2, "", true,
+		),
+	)
+
 	Context("GetPfNameFromAuxDev", func() {
 		var (
 			mockSriovnet *mocks.SriovnetProvider

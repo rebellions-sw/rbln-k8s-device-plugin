@@ -30,11 +30,13 @@ import (
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 
 	cdiPkg "github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/cdi"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
 )
 
 type resourceServer struct {
 	resourcePool       types.ResourcePool
+	resourceConfig     *types.ResourceConfig
 	pluginWatch        bool
 	endPoint           string // Socket file
 	sockPath           string // Socket file path
@@ -51,10 +53,12 @@ type resourceServer struct {
 const (
 	rsWatchInterval = 5 * time.Second
 	unix            = "unix"
+	sysBusPci       = "/sys/bus/pci/devices"
 )
 
 // NewResourceServer returns an instance of ResourceServer
-func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types.ResourcePool) types.ResourceServer {
+func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types.ResourcePool,
+	rc *types.ResourceConfig) types.ResourceServer {
 	sockName := fmt.Sprintf("%s_%s.%s", prefix, rp.GetResourceName(), suffix)
 	sockPath := filepath.Join(types.SockDir, sockName)
 	if !pluginWatch {
@@ -62,6 +66,7 @@ func NewResourceServer(prefix, suffix string, pluginWatch, useCdi bool, rp types
 	}
 	return &resourceServer{
 		resourcePool:       rp,
+		resourceConfig:     rc,
 		pluginWatch:        pluginWatch,
 		endPoint:           sockName,
 		sockPath:           sockPath,
@@ -229,7 +234,39 @@ func (rs *resourceServer) updateCDISpec() error {
 // TODO: (SchSeba) check if we want to use this function
 func (rs *resourceServer) GetPreferredAllocation(ctx context.Context,
 	request *pluginapi.PreferredAllocationRequest) (*pluginapi.PreferredAllocationResponse, error) {
-	return &pluginapi.PreferredAllocationResponse{}, nil
+	glog.Infof("GetPreferredAllocation() called with %+v", request)
+	response := &pluginapi.PreferredAllocationResponse{}
+	for _, req := range request.ContainerRequests {
+		var resp *pluginapi.ContainerPreferredAllocationResponse
+		devices, err := rs.selectPreferredDevices(req.AvailableDeviceIDs, req.MustIncludeDeviceIDs, int(req.AllocationSize))
+		if err != nil {
+			// Check error type to determine if we should reject allocation entirely
+			if _, ok := err.(*CrossNUMAAllocationError); ok {
+				glog.Errorf(
+					"Cross-NUMA allocation not possible, rejecting allocation entirely. Request: %+v, Error: %v",
+					req, err,
+				)
+				// Return error to reject allocation completely
+				return nil, err
+			}
+
+			// For non-critical errors (like NonRebellionsDeviceError), fall back to kubelet
+			glog.Warningf(
+				"Could not determine preferred allocation for container, falling back to kubelet's default logic. Request: %+v, Error: %v",
+				req, err,
+			)
+			resp = &pluginapi.ContainerPreferredAllocationResponse{
+				DeviceIDs: []string{},
+			}
+		} else {
+			resp = &pluginapi.ContainerPreferredAllocationResponse{
+				DeviceIDs: devices,
+			}
+		}
+
+		response.ContainerResponses = append(response.ContainerResponses, resp)
+	}
+	return response, nil
 }
 
 func (rs *resourceServer) PreStartContainer(ctx context.Context,
@@ -240,7 +277,7 @@ func (rs *resourceServer) PreStartContainer(ctx context.Context,
 func (rs *resourceServer) GetDevicePluginOptions(ctx context.Context, empty *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
 	return &pluginapi.DevicePluginOptions{
 		PreStartRequired:                false,
-		GetPreferredAllocationAvailable: false,
+		GetPreferredAllocationAvailable: true,
 	}, nil
 }
 
@@ -379,4 +416,77 @@ func (rs *resourceServer) triggerUpdate() {
 
 func (rs *resourceServer) getEnvs(deviceIDs []string) (map[string]string, error) {
 	return rs.resourcePool.GetEnvs(rs.resourceNamePrefix, deviceIDs)
+}
+
+func (rs *resourceServer) selectPreferredDevices(availableDeviceIDs, mustIncludeDeviceIDs []string, allocationSize int) ([]string, error) {
+	// Check if this is a Rebellions NPU device pool
+	if !rs.isRebellionsNPUPool(availableDeviceIDs) {
+		glog.Infof("Non-Rebellions device pool detected, delegating to kubelet for allocation")
+		return nil, fmt.Errorf("non-Rebellions device pool, kubelet should handle allocation")
+	}
+
+	glog.Infof("Rebellions NPU device pool detected, applying topology-aware allocation")
+
+	// Get product ID of the first device to determine device type
+	productID, err := rs.getDeviceProductID(availableDeviceIDs[0])
+	if err != nil {
+		glog.Errorf("Failed to get product ID for device %s: %v", availableDeviceIDs[0], err)
+		return nil, fmt.Errorf("failed to get product ID for device %s: %v", availableDeviceIDs[0], err)
+	}
+
+	// Create allocator using factory
+	allocator, err := CreateAllocator(availableDeviceIDs, productID, rs.resourceConfig)
+	if err != nil {
+		glog.Errorf("Failed to create allocator: %v", err)
+		return nil, err
+	}
+
+	result, err := allocator.SelectDevices(mustIncludeDeviceIDs, allocationSize)
+	if err != nil {
+		glog.Errorf("Failed to select devices: %v", err)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// isRebellionsNPUPool checks if the device pool contains Rebellions NPU devices
+func (rs *resourceServer) isRebellionsNPUPool(availableDeviceIDs []string) bool {
+	// Use the first device to check vendor ID
+	deviceID := availableDeviceIDs[0]
+	vendorID, err := rs.getDeviceVendorID(deviceID)
+	if err != nil {
+		glog.Warningf("Failed to get vendor ID for device %s: %v", deviceID, err)
+		return false
+	}
+
+	return vendorID == infoprovider.RebellionsVendorID
+}
+
+// getDeviceVendorID returns the vendor ID for a given PCI device
+func (rs *resourceServer) getDeviceVendorID(pciAddr string) (string, error) {
+	vendorPath := filepath.Join(sysBusPci, pciAddr, "vendor")
+	vendorData, err := os.ReadFile(vendorPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read vendor ID: %w", err)
+	}
+
+	vendorStr := strings.TrimSpace(string(vendorData))
+	vendorStr = strings.TrimPrefix(vendorStr, "0x")
+
+	return vendorStr, nil
+}
+
+// getDeviceProductID returns the product ID for a given PCI device
+func (rs *resourceServer) getDeviceProductID(pciAddr string) (string, error) {
+	devicePath := filepath.Join(sysBusPci, pciAddr, "device")
+	deviceData, err := os.ReadFile(devicePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read device/product ID: %w", err)
+	}
+
+	deviceStr := strings.TrimSpace(string(deviceData))
+	deviceStr = strings.TrimPrefix(deviceStr, "0x")
+
+	return deviceStr, nil
 }

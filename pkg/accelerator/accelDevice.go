@@ -20,6 +20,7 @@ import (
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/devices"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/infoprovider"
 	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rebel-k8s-device-plugin/pkg/utils"
 )
 
 // accelDevice extends HostDevice and embedds GenPciDevice
@@ -33,9 +34,18 @@ func NewAccelDevice(dev *ghw.PCIDevice, rFactory types.ResourceFactory,
 	rc *types.ResourceConfig) (types.AccelDevice, error) {
 	infoProviders := make([]types.DeviceInfoProvider, 0)
 
+	driverName, err := utils.GetDriverName(dev.Address)
+	if err != nil {
+		return nil, err
+	}
+
 	// rebellions: add rebellions info provider
 	if dev.Vendor.ID == infoprovider.RebellionsVendorID {
-		infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Address))
+		if driverName == "rebellions" {
+			infoProviders = append(infoProviders, infoprovider.NewRebellionsInfoProvider(dev.Address))
+		} else if driverName == "vfio-pci" {
+			infoProviders = append(infoProviders, infoprovider.NewVfioInfoProvider(dev.Address))
+		}
 	}
 
 	hostDev, err := devices.NewHostDeviceImpl(dev, dev.Address, rFactory, rc, infoProviders)
