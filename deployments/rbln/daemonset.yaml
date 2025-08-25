@@ -2,28 +2,28 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: rebel-device-plugin
+  name: rbln-device-plugin
   namespace: kube-system
 
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: rebel-device-plugin
+  name: rbln-device-plugin
   namespace: kube-system
   labels:
     tier: node
-    app: rebel-device-plugin
+    app: rbln-device-plugin
 spec:
   selector:
     matchLabels:
-      name: rebel-device-plugin
+      name: rbln-device-plugin
   template:
     metadata:
       labels:
-        name: rebel-device-plugin
+        name: rbln-device-plugin
         tier: node
-        app: rebel-device-plugin
+        app: rbln-device-plugin
     spec:
       hostNetwork: true
       nodeSelector:
@@ -35,7 +35,7 @@ spec:
         - key: ""
           operator: Exists
           effect: NoExecute
-      serviceAccountName: rebel-device-plugin
+      serviceAccountName: rbln-device-plugin
       containers:
         - name: device-plugin
           image: rebellions/k8s-device-plugin:v0.3.0
@@ -81,7 +81,7 @@ spec:
             type: DirectoryOrCreate
         - name: config-volume
           configMap:
-            name: rebel-device-plugin-config
+            name: rbln-device-plugin-config
             items:
               - key: config.json
                 path: config.json

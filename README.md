@@ -11,19 +11,19 @@ This repository contains Kubernetes device plugin implementation to support Rebe
 Assuming your nodes have Rebellions NPU devices equipped and Rebellions driver installed correctly, running these commands will execute a device plugin DaemonSet pod for each node.
 
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rebel/configmap.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rbln/configmap.yaml
 
-$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rebel/daemonset.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rbln/daemonset.yaml
 ```
 
 Verify that the installed DaemonSet is running properly.
 ```bash
-$ kubectl get pod -n kube-system -l name=rebel-device-plugin
+$ kubectl get pod -n kube-system -l name=rbln-device-plugin
 NAME                        READY   STATUS    RESTARTS   AGE
-rebel-device-plugin-5tj4z   1/1     Running   0          41s
-rebel-device-plugin-7zqgh   1/1     Running   0          41s
-rebel-device-plugin-ddtts   1/1     Running   0          41s
-rebel-device-plugin-zrw8s   1/1     Running   0          41s
+rbln-device-plugin-5tj4z   1/1     Running   0          41s
+rbln-device-plugin-7zqgh   1/1     Running   0          41s
+rbln-device-plugin-ddtts   1/1     Running   0          41s
+rbln-device-plugin-zrw8s   1/1     Running   0          41s
 ```
 
 By describing nodes containing Rebellions NPUs (ATOM for example), you can see the resource named `rebellions.ai/ATOM`.
@@ -41,17 +41,17 @@ Allocatable:
 
 Create a test pod to verify it's scheduled and running successfully.
 ```bash
-$ kubectl create -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rebel/pod-tc.yaml
+$ kubectl create -f https://raw.githubusercontent.com/rebellions-sw/rbln-k8s-device-plugin/master/deployments/rbln/pod-tc.yaml
 
 $ kubectl get pod
 NAME                          READY   STATUS    RESTARTS   AGE
-rebel-device-plugin-testpod   1/1     Running   0          6s
+rbln-device-plugin-testpod   1/1     Running   0          6s
 ```
 
 The device plugin automatically mounts `rbln-stat` utility (installed together with Rebellions driver) from host machine to pod container, so you can check it by attaching to the pod.
 ```bash
-$ kubectl exec -it rebel-device-plugin-testpod -- bash
-root@rebel-device-plugin-testpod:/# rbln-stat
+$ kubectl exec -it rbln-device-plugin-testpod -- bash
+root@rbln-device-plugin-testpod:/# rbln-stat
 Thu Jan 2 22:38:34 2025
 +-------------------------------------------------------------------------------------------------+
 |                        Device Information KMD ver: 1.2.79-6d00b56-release                       |

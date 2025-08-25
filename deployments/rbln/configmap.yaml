@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: rebel-device-plugin-config
+  name: rbln-device-plugin-config
   namespace: kube-system
 data:
   config.json: |
