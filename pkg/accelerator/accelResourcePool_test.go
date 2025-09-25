@@ -72,7 +72,7 @@ var _ = Describe("AccelResourcePool", func() {
 
 			It("should return valid slice of device specs", func() {
 				Expect(actual).ToNot(BeNil())
-				Expect(actual).To(HaveLen(3)) // fake1 + fake2 => 3 devices
+				Expect(actual).To(HaveLen(4)) // fake1 + fake2 + rsd0 => 4 devices
 				Expect(actual).To(ContainElement(fake1ds[0]))
 				Expect(actual).To(ContainElement(fake1ds[1]))
 				Expect(actual).To(ContainElement(fake2ds[0]))

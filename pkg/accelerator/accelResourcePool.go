@@ -21,6 +21,7 @@ import (
 
 	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/resources"
 	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
 const (
@@ -59,6 +60,15 @@ func (rp *accelResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.Dev
 			}
 		}
 	}
+
+	rsdGroupDevice := utils.RecreateRsdGroup(deviceIDs)
+	glog.Infof("RSD group device: %s", rsdGroupDevice)
+	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
+		HostPath:      rsdGroupDevice,
+		ContainerPath: rsdGroupDevice,
+		Permissions:   "rw",
+	})
+
 	return devSpecs
 }
 

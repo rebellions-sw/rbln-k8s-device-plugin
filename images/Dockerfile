@@ -7,6 +7,7 @@ ENV HTTPS_PROXY $https_proxy
 RUN apk add --no-cache --virtual build-dependencies build-base
 
 WORKDIR /usr/src/sriov-network-device-plugin
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 RUN make clean && \
     make build
 
@@ -21,16 +22,21 @@ RUN apk add --no-cache --virtual build-dependencies build-base linux-headers
 WORKDIR /tmp/ddptool
 RUN make
 
-FROM alpine:3
-RUN apk add --no-cache hwdata-pci
-COPY --from=builder /usr/src/sriov-network-device-plugin/build/sriovdp /usr/bin/
+FROM redhat/ubi9-minimal:9.6
+
+RUN microdnf install -y \
+      pciutils-3.7.0-7.el9 \
+      hwdata-0.348-9.18.el9 \
+  && microdnf clean all
+
+COPY --from=builder     /usr/src/sriov-network-device-plugin/build/sriovdp /usr/bin/
 COPY --from=ddp-builder /tmp/ddptool/ddptool /usr/bin/
+
+COPY ./images/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 WORKDIR /
 
-LABEL io.k8s.display-name="SRIOV Network Device Plugin"
-
-COPY ./images/entrypoint.sh /
-
-RUN rm -rf /var/cache/apk/*
+LABEL io.k8s.display-name="SRIOV Network Device Plugin (UBI9)"
 
 ENTRYPOINT ["/entrypoint.sh"]
