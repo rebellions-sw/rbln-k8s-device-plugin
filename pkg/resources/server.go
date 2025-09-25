@@ -134,30 +134,28 @@ func (rs *resourceServer) Allocate(ctx context.Context, rqt *pluginapi.AllocateR
 	for _, container := range rqt.ContainerRequests {
 		containerResp := new(pluginapi.ContainerAllocateResponse)
 
-		deviceIDs := make([]string, len(container.DevicesIDs))
-		copy(deviceIDs, container.DevicesIDs)
-		sort.Strings(deviceIDs)
+		sort.Strings(container.DevicesIDs)
 
-		envs, err := rs.getEnvs(deviceIDs)
+		envs, err := rs.getEnvs(container.DevicesIDs)
 		if err != nil {
-			glog.Errorf("failed to get environment variables for device IDs %v: %v", deviceIDs, err)
+			glog.Errorf("failed to get environment variables for device IDs %v: %v", container.DevicesIDs, err)
 			return nil, err
 		}
 
 		if rs.useCdi {
 			containerResp.Annotations, err = rs.cdi.CreateContainerAnnotations(
-				deviceIDs, rs.resourceNamePrefix, rs.resourcePool.GetCDIName())
+				container.DevicesIDs, rs.resourceNamePrefix, rs.resourcePool.GetCDIName())
 			if err != nil {
 				return nil, fmt.Errorf("can't create container annotation: %s", err)
 			}
 		} else {
-			containerResp.Devices = rs.resourcePool.GetDeviceSpecs(deviceIDs)
-			containerResp.Mounts = rs.resourcePool.GetMounts(deviceIDs)
+			containerResp.Devices = rs.resourcePool.GetDeviceSpecs(container.DevicesIDs)
+			containerResp.Mounts = rs.resourcePool.GetMounts(container.DevicesIDs)
 		}
 
-		err = rs.resourcePool.StoreDeviceInfoFile(rs.resourceNamePrefix, deviceIDs)
+		err = rs.resourcePool.StoreDeviceInfoFile(rs.resourceNamePrefix, container.DevicesIDs)
 		if err != nil {
-			glog.Errorf("failed to store device info file for device IDs %v: %v", deviceIDs, err)
+			glog.Errorf("failed to store device info file for device IDs %v: %v", container.DevicesIDs, err)
 			return nil, err
 		}
 
