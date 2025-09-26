@@ -49,6 +49,7 @@ var _ = Describe("AccelResourcePool", func() {
 				{ContainerPath: "/fake/path", HostPath: "/dev/fake1b"},
 			}
 			fake1.On("GetDeviceSpecs").Return(fake1ds)
+			fake1.On("GetDriver").Return("fake-driver")
 
 			// fake2 will have 1 device spec
 			fake2 := &mocks.AccelDevice{}
@@ -56,11 +57,13 @@ var _ = Describe("AccelResourcePool", func() {
 				{ContainerPath: "/fake/path", HostPath: "/dev/fake2"},
 			}
 			fake2.On("GetDeviceSpecs").Return(fake2ds)
+			fake2.On("GetDriver").Return("fake-driver")
 
 			// fake3 will have 0 device specs
 			fake3 := &mocks.AccelDevice{}
 			fake3ds := []*pluginapi.DeviceSpec{}
-			fake2.On("GetDeviceSpecs").Return(fake3ds)
+			fake3.On("GetDeviceSpecs").Return(fake3ds)
+			fake3.On("GetDriver").Return("fake-driver")
 
 			pcis := map[string]types.HostDevice{"fake1": fake1, "fake2": fake2, "fake3": fake3}
 
@@ -72,10 +75,45 @@ var _ = Describe("AccelResourcePool", func() {
 
 			It("should return valid slice of device specs", func() {
 				Expect(actual).ToNot(BeNil())
-				Expect(actual).To(HaveLen(4)) // fake1 + fake2 + rsd0 => 4 devices
+				Expect(actual).To(HaveLen(3)) // fake1 (2) + fake2 (1) => 3 devices (no RSD for fake-driver)
 				Expect(actual).To(ContainElement(fake1ds[0]))
 				Expect(actual).To(ContainElement(fake1ds[1]))
 				Expect(actual).To(ContainElement(fake2ds[0]))
+			})
+		})
+		Context("for rebellions accelerator devices", func() {
+			rc := &types.ResourceConfig{
+				ResourceName:   "rebellions",
+				ResourcePrefix: "rebellions",
+			}
+
+			rbln1 := &mocks.AccelDevice{}
+			rbln1ds := []*pluginapi.DeviceSpec{
+				{ContainerPath: "/dev/rbln", HostPath: "/dev/rbln1"},
+			}
+			rbln1.On("GetDeviceSpecs").Return(rbln1ds)
+			rbln1.On("GetDriver").Return("rebellions")
+
+			rbln2 := &mocks.AccelDevice{}
+			rbln2ds := []*pluginapi.DeviceSpec{
+				{ContainerPath: "/dev/rbln", HostPath: "/dev/rbln2"},
+			}
+			rbln2.On("GetDeviceSpecs").Return(rbln2ds)
+			rbln2.On("GetDriver").Return("rebellions")
+
+			pcis := map[string]types.HostDevice{"rbln1": rbln1, "rbln2": rbln2}
+
+			rp := accelerator.NewAccelResourcePool(rc, pcis)
+
+			devIDs := []string{"rbln1", "rbln2"}
+
+			actual := rp.GetDeviceSpecs(devIDs)
+
+			It("should return device specs including RSD group device", func() {
+				Expect(actual).ToNot(BeNil())
+				Expect(actual).To(HaveLen(3)) // rbln1 (1) + rbln2 (1) + rsd group (1) => 3 devices
+				Expect(actual).To(ContainElement(rbln1ds[0]))
+				Expect(actual).To(ContainElement(rbln2ds[0]))
 			})
 		})
 	})
