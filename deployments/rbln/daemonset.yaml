@@ -45,6 +45,7 @@ spec:
             - --log-level=10
           securityContext:
             privileged: true
+            runAsUser: 0
           resources:
             requests:
               cpu: "250m"
@@ -65,6 +66,13 @@ spec:
               mountPath: /etc/pcidp
             - name: device-info
               mountPath: /var/run/k8s.cni.cncf.io/devinfo/dp
+            - name: host-usr-local-bin
+              mountPath: /usr/local/bin
+              readOnly: true
+            - name: host-dev
+              mountPath: /dev
+            - name: host-sys
+              mountPath: /sys
       volumes:
         - name: devicesock
           hostPath:
@@ -85,3 +93,15 @@ spec:
             items:
               - key: config.json
                 path: config.json
+        - name: host-sys
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: host-dev
+          hostPath:
+            path: /dev
+            type: Directory
+        - name: host-usr-local-bin
+          hostPath:
+            path: /usr/local/bin
+            type: Directory
