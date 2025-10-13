@@ -25,8 +25,9 @@ import (
 )
 
 const (
-	accelPoolType  = "net-accel"
-	rblnDriverName = "rebellions"
+	accelPoolType    = "net-accel"
+	rblnDriverName   = "rebellions"
+	containerRsdPath = "/dev/rsd0"
 )
 
 type accelResourcePool struct {
@@ -67,7 +68,7 @@ func (rp *accelResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.Dev
 		glog.Infof("RSD group device: %s", rsdGroupDevice)
 		devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
 			HostPath:      rsdGroupDevice,
-			ContainerPath: rsdGroupDevice,
+			ContainerPath: containerRsdPath,
 			Permissions:   "rw",
 		})
 	}
