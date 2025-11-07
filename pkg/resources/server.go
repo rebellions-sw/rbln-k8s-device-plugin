@@ -242,17 +242,7 @@ func (rs *resourceServer) GetPreferredAllocation(ctx context.Context,
 	for _, req := range request.ContainerRequests {
 		var resp *pluginapi.ContainerPreferredAllocationResponse
 		devices, err := rs.selectPreferredDevices(req.AvailableDeviceIDs, req.MustIncludeDeviceIDs, int(req.AllocationSize))
-		if err != nil {
-			// Check error type to determine if we should reject allocation entirely
-			if _, ok := err.(*CrossNUMAAllocationError); ok {
-				glog.Errorf(
-					"Cross-NUMA allocation not possible, rejecting allocation entirely. Request: %+v, Error: %v",
-					req, err,
-				)
-				// Return error to reject allocation completely
-				return nil, err
-			}
-
+		if err != nil || devices == nil {
 			// For non-critical errors (like NonRebellionsDeviceError), fall back to kubelet
 			glog.Warningf(
 				"Could not determine preferred allocation for container, falling back to kubelet's default logic. Request: %+v, Error: %v",
@@ -444,12 +434,7 @@ func (rs *resourceServer) selectPreferredDevices(availableDeviceIDs, mustInclude
 		return nil, err
 	}
 
-	result, err := allocator.SelectDevices(mustIncludeDeviceIDs, allocationSize)
-	if err != nil {
-		glog.Errorf("Failed to select devices: %v", err)
-		return nil, err
-	}
-
+	result := allocator.SelectDevices(mustIncludeDeviceIDs, allocationSize)
 	return result, nil
 }
 

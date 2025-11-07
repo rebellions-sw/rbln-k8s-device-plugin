@@ -60,13 +60,6 @@ var _ = Describe("TopologyAllocator", func() {
 		return createTestTopology(numaConfigs, 10, 6) // NumaNodeDeviceCount를 6으로 변경
 	}
 
-	// Helper function to create test topology with AllowCrossNuma setting
-	createTestTopologyWithCrossNUMA := func(numaConfigs map[int][]int, allowCrossNuma bool) *TopologyAllocator {
-		allocator := createTestTopology(numaConfigs, 10, 6)
-		allocator.AllowCrossNuma = allowCrossNuma
-		return allocator
-	}
-
 	// Helper function to get bridge assignment of selected devices
 	getBridgeAssignment := func(allocator *TopologyAllocator, selectedDevices []string) map[string]int {
 		bridgeAssignment := make(map[string]int)
@@ -92,9 +85,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Bridge capacities: [4, 3, 2, 1] - should select bridge0 (4 devices)
 				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 4)
+				result := allocator.SelectDevices([]string{}, 4)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(4))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -108,9 +100,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Bridge capacities: [4, 3, 2, 1] - should select bridge1
 				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 3)
+				result := allocator.SelectDevices([]string{}, 3)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(3))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -125,9 +116,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Bridge capacities: [4, 3, 2, 1] - should use 2 bridges: bridge0(4) + bridge2(2)
 				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 6)
+				result := allocator.SelectDevices([]string{}, 6)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(6))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -141,9 +131,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Bridge capacities: [4, 3, 2, 1] - should use 3 bridges for size 8
 				allocator := createTestTopologyWithBridges([]int{4, 3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 8)
+				result := allocator.SelectDevices([]string{}, 8)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(8))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -159,9 +148,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Bridge capacities: [3, 2, 1] - for allocation size 6
 				allocator := createTestTopologyWithBridges([]int{3, 2, 1})
 
-				result, err := allocator.SelectDevices([]string{}, 6)
+				result := allocator.SelectDevices([]string{}, 6)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(6))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -184,9 +172,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Since both have same pattern, algorithm should consistently pick one
 				allocator := createTestTopologyWithBridges([]int{3, 3, 2})
 
-				result, err := allocator.SelectDevices([]string{}, 4)
+				result := allocator.SelectDevices([]string{}, 4)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(4))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -200,9 +187,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Should prefer single bridge (bridge0) over multiple bridges
 				allocator := createTestTopologyWithBridges([]int{5, 3, 2})
 
-				result, err := allocator.SelectDevices([]string{}, 4)
+				result := allocator.SelectDevices([]string{}, 4)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(4))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -223,9 +209,8 @@ var _ = Describe("TopologyAllocator", func() {
 				// Should use 3 bridges: 2+2+1
 				allocator := createTestTopologyWithBridges([]int{2, 2, 2, 2})
 
-				result, err := allocator.SelectDevices([]string{}, 5)
+				result := allocator.SelectDevices([]string{}, 5)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(5))
 
 				bridgeAssignment := getBridgeAssignment(allocator, result)
@@ -258,9 +243,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 10)
+				result := allocator.SelectDevices([]string{}, 10)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(10))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -280,9 +264,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 8)
+				result := allocator.SelectDevices([]string{}, 8)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(8))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -301,9 +284,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 9)
+				result := allocator.SelectDevices([]string{}, 9)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(9))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -323,9 +305,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 11)
+				result := allocator.SelectDevices([]string{}, 11)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(11))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -344,9 +325,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 7)
+				result := allocator.SelectDevices([]string{}, 7)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(7))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -367,9 +347,8 @@ var _ = Describe("TopologyAllocator", func() {
 				}
 				allocator := createTestTopologyWithMultipleNUMA(numaConfigs)
 
-				result, err := allocator.SelectDevices([]string{}, 5)
+				result := allocator.SelectDevices([]string{}, 5)
 
-				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(5))
 
 				numaCount := countDevicesPerNUMA(result)
@@ -382,94 +361,6 @@ var _ = Describe("TopologyAllocator", func() {
 					}
 				}
 				Expect(usedNUMACount).To(Equal(1), "Should use only one NUMA node for allocation <= NumaNodeDeviceCount")
-			})
-		})
-	})
-
-	Describe("Error Scenarios", func() {
-		Context("when insufficient devices are available", func() {
-			It("should return error for allocation exceeding total capacity", func() {
-				// Bridge capacities: [3, 2, 1] - total 6 devices, request 8
-				allocator := createTestTopologyWithBridges([]int{3, 2, 1})
-
-				result, err := allocator.SelectDevices([]string{}, 8)
-
-				Expect(err).To(HaveOccurred())
-				Expect(result).To(BeNil())
-				// NUMA 노드 레벨에서 먼저 실패하므로 해당 에러 메시지 확인
-				Expect(err.Error()).To(ContainSubstring("no NUMA node with sufficient devices"))
-			})
-		})
-
-		Context("when AllowCrossNuma is false and single NUMA cannot satisfy allocation", func() {
-			It("should return CrossNUMAAllocationError when allocation size exceeds single NUMA capacity", func() {
-				// NUMA 0: 3 devices, NUMA 1: 4 devices (total 7 devices available)
-				// Request 5 devices (> 4 max per NUMA), but AllowCrossNuma = false
-				numaConfigs := map[int][]int{
-					0: {3}, // NUMA 0: 3 devices
-					1: {4}, // NUMA 1: 4 devices
-				}
-				allocator := createTestTopologyWithCrossNUMA(numaConfigs, false)
-
-				result, err := allocator.SelectDevices([]string{}, 5)
-
-				Expect(err).To(HaveOccurred())
-				Expect(result).To(BeNil())
-				Expect(err).To(BeAssignableToTypeOf(&CrossNUMAAllocationError{}))
-				Expect(err.Error()).To(ContainSubstring("cross-NUMA allocation not possible"))
-			})
-
-			It("should return CrossNUMAAllocationError when no single NUMA has enough devices", func() {
-				// NUMA 0: 2 devices, NUMA 1: 3 devices (total 5 devices available)
-				// Request 4 devices, but no single NUMA has 4 devices
-				numaConfigs := map[int][]int{
-					0: {2}, // NUMA 0: 2 devices
-					1: {3}, // NUMA 1: 3 devices
-				}
-				allocator := createTestTopologyWithCrossNUMA(numaConfigs, false)
-
-				result, err := allocator.SelectDevices([]string{}, 4)
-
-				Expect(err).To(HaveOccurred())
-				Expect(result).To(BeNil())
-				Expect(err).To(BeAssignableToTypeOf(&CrossNUMAAllocationError{}))
-				Expect(err.Error()).To(ContainSubstring("cross-NUMA allocation not possible"))
-			})
-		})
-	})
-
-	Describe("AllowCrossNuma Configuration", func() {
-		Context("when AllowCrossNuma is false", func() {
-			It("should succeed when single NUMA can satisfy allocation", func() {
-				// NUMA 0: 3 devices, NUMA 1: 5 devices
-				// Request 4 devices, NUMA 1 can satisfy (5 >= 4)
-				numaConfigs := map[int][]int{
-					0: {3}, // NUMA 0: 3 devices
-					1: {5}, // NUMA 1: 5 devices
-				}
-				allocator := createTestTopologyWithCrossNUMA(numaConfigs, false)
-
-				result, err := allocator.SelectDevices([]string{}, 4)
-
-				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(HaveLen(4))
-			})
-		})
-
-		Context("when AllowCrossNuma is true", func() {
-			It("should succeed when single NUMA cannot satisfy but cross-NUMA is allowed", func() {
-				// NUMA 0: 3 devices, NUMA 1: 4 devices (total 7 devices available)
-				// Request 5 devices (> 4 max per NUMA), but AllowCrossNuma = true
-				numaConfigs := map[int][]int{
-					0: {3}, // NUMA 0: 3 devices
-					1: {4}, // NUMA 1: 4 devices
-				}
-				allocator := createTestTopologyWithCrossNUMA(numaConfigs, true)
-
-				result, err := allocator.SelectDevices([]string{}, 5)
-
-				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(HaveLen(5))
 			})
 		})
 	})

@@ -23,7 +23,6 @@ func CreateAllocator(availableDeviceIDs []string, productID string, resourceConf
 			AtomCA25BridgeIndex,
 			AtomCA25PciBridgeDeviceCount,
 			AtomCA25NumaNodeDeviceCount,
-			resourceConfig.AllowCrossNuma,
 		)
 		if err != nil {
 			return nil, err
@@ -35,7 +34,6 @@ func CreateAllocator(availableDeviceIDs []string, productID string, resourceConf
 			AtomCA22BridgeIndex,
 			AtomCA22PciBridgeDeviceCount,
 			AtomCA22NumaNodeDeviceCount,
-			resourceConfig.AllowCrossNuma,
 		)
 		if err != nil {
 			return nil, err
