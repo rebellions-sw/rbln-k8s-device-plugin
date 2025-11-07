@@ -175,9 +175,10 @@ func (ta *TopologyAllocator) selectDevicesFromNUMA(numaTopology *NUMATopology, a
 
 // numaNodeEntry represents a NUMA node with its device count for sorting
 type numaNodeEntry struct {
-	numaNode    NUMANode
-	topology    *NUMATopology
-	deviceCount int
+	numaNode          NUMANode
+	topology          *NUMATopology
+	deviceCount       int
+	maxBridgeCapacity int
 }
 
 func (ta *TopologyAllocator) getNUMANodesSortedByDeviceCount(allocationSize int) []numaNodeEntry {
@@ -185,28 +186,43 @@ func (ta *TopologyAllocator) getNUMANodesSortedByDeviceCount(allocationSize int)
 
 	for numaNode, topology := range ta.NodeTopology.NUMANodes {
 		deviceCount := len(ta.getAllDevicesFromNUMA(topology))
+		maxBridgeCapacity := ta.getMaxBridgeCapacity(topology)
+
 		numaEntries = append(numaEntries, numaNodeEntry{
-			numaNode:    numaNode,
-			topology:    topology,
-			deviceCount: deviceCount,
+			numaNode:          numaNode,
+			topology:          topology,
+			deviceCount:       deviceCount,
+			maxBridgeCapacity: maxBridgeCapacity,
 		})
 	}
 
 	sort.Slice(numaEntries, func(i, j int) bool {
 		iEnough := numaEntries[i].deviceCount >= allocationSize
 		jEnough := numaEntries[j].deviceCount >= allocationSize
-
-		switch {
-		case iEnough && !jEnough:
-			return true
-		case !iEnough && jEnough:
-			return false
-		default:
-			return numaEntries[i].deviceCount < numaEntries[j].deviceCount
+		if iEnough != jEnough {
+			return iEnough
 		}
+
+		iSingleBridge := numaEntries[i].maxBridgeCapacity >= allocationSize
+		jSingleBridge := numaEntries[j].maxBridgeCapacity >= allocationSize
+		if iSingleBridge != jSingleBridge {
+			return iSingleBridge
+		}
+
+		return numaEntries[i].deviceCount < numaEntries[j].deviceCount
 	})
 
 	return numaEntries
+}
+
+func (ta *TopologyAllocator) getMaxBridgeCapacity(numaTopology *NUMATopology) int {
+	maxCap := 0
+	for _, bridge := range numaTopology.PCIBridges {
+		if len(bridge.DeviceIDs) > maxCap {
+			maxCap = len(bridge.DeviceIDs)
+		}
+	}
+	return maxCap
 }
 
 // min returns the minimum of two integers
