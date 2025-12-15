@@ -208,27 +208,12 @@ func destroyRsdGroup(deviceIDs []string) error {
 		if err != nil {
 			return err
 		}
+		glog.Infof("Destroyed RSD groups: %s", strings.Join(groupIDs, ","))
 	}
 	return nil
 }
 
 func createRsdGroup(devices []string) (groupID string, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultExecTimeout)
-	defer cancel()
-
-	release, err := acquireFileLock(ctx, rblnSmiLockFile)
-	if err != nil {
-		return "", err
-	}
-
-	defer func() {
-		releaseErr := release()
-		if err == nil && releaseErr != nil {
-			err = releaseErr
-			groupID = ""
-		}
-	}()
-
 	smiInfo, err := getDeviceInfoFromRblnSmi()
 	if err != nil {
 		return "", err
@@ -255,18 +240,35 @@ func createRsdGroup(devices []string) (groupID string, err error) {
 	if err != nil {
 		return "", err
 	}
+
+	glog.Infof("Created RSD group %s for devices: %s", groupID, strings.Join(devices, ","))
 	return groupID, nil
 }
 
-func RecreateRsdGroup(deviceIDs []string) string {
-	var groupID string
-	err := destroyRsdGroup(deviceIDs)
+func withRsdLock(ctx context.Context, fn func() (string, error)) (string, error) {
+	release, err := acquireFileLock(ctx, rblnSmiLockFile)
 	if err != nil {
-		glog.Errorf("Failed to destroy RSD groups: %q", err)
-		return defaultRsdDevice
+		return "", err
 	}
+	defer func() {
+		if relErr := release(); err == nil && relErr != nil {
+			err = relErr
+		}
+	}()
+	return fn()
+}
 
-	groupID, err = createRsdGroup(deviceIDs)
+func RecreateRsdGroup(deviceIDs []string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultExecTimeout)
+	defer cancel()
+
+	groupID, err := withRsdLock(ctx, func() (string, error) {
+		if err := destroyRsdGroup(deviceIDs); err != nil {
+			glog.Errorf("Failed to destroy RSD groups: %q", err)
+			return "", err
+		}
+		return createRsdGroup(deviceIDs)
+	})
 
 	if err != nil {
 		glog.Errorf("Failed to create RSD groups: %q", err)
