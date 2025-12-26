@@ -21,15 +21,23 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	cdiSpecs "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	"github.com/golang/glog"
+	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 
 	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/types"
+	"github.com/rebellions-sw/rbln-k8s-device-plugin/pkg/utils"
 )
 
-const cdiSpecPrefix = "sriov-dp-"
+const (
+	cdiSpecPrefix       = "sriov-dp-"
+	cdiCommonDeviceName = "common"
+	SysfsDriverPools    = "/sys/bus/pci/drivers/rebellions/%s/pools"
+	containerRsdPath    = "/dev/rsd0"
+)
 
 // CDI represents CDI API required by Device plugin
 type CDI interface {
@@ -102,7 +110,12 @@ func (c *impl) CreateContainerAnnotations(devicesIDs []string, resourcePrefix, r
 	}
 	devices := make([]string, 0)
 	for _, id := range devicesIDs {
-		devices = append(devices, cdi.QualifiedName(resourcePrefix, resourceKind, id))
+		deviceName, err := getRBLNDeviceName(id)
+		if err != nil {
+			glog.Errorf("CreateContainerAnnotations(): can't create container annotation: %v", err)
+			return nil, err
+		}
+		devices = append(devices, cdi.QualifiedName(resourcePrefix, resourceKind, deviceName))
 	}
 	annoValue, err := cdi.AnnotationValue(devices)
 	if err != nil {
@@ -129,4 +142,30 @@ func (c *impl) CleanupSpecs() error {
 	}
 
 	return nil
+}
+
+func CreateCdiDeviceSpecs(deviceIDs []string) []*pluginapi.DeviceSpec {
+	devSpecs := make([]*pluginapi.DeviceSpec, 0)
+
+	rsdGroupDevice := utils.RecreateRsdGroup(deviceIDs)
+	glog.Infof("RSD group device: %s", rsdGroupDevice)
+	devSpecs = append(devSpecs, &pluginapi.DeviceSpec{
+		HostPath:      rsdGroupDevice,
+		ContainerPath: containerRsdPath,
+		Permissions:   "rw",
+	})
+
+	return devSpecs
+}
+
+func getRBLNDeviceName(pciAddress string) (string, error) {
+	poolsFilePath := fmt.Sprintf(SysfsDriverPools, pciAddress)
+	poolsFile, err := os.ReadFile(poolsFilePath)
+	if err != nil {
+		glog.Errorf("NewRebellionsInfoProvider(): Failed to read %s: %s", poolsFilePath, err.Error())
+		return "", err
+	}
+
+	deviceID := strings.Split(strings.Split(string(poolsFile), "\n")[1], " ")[0]
+	return deviceID, nil
 }

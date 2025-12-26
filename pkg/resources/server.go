@@ -148,6 +148,8 @@ func (rs *resourceServer) Allocate(ctx context.Context, rqt *pluginapi.AllocateR
 			if err != nil {
 				return nil, fmt.Errorf("can't create container annotation: %s", err)
 			}
+			containerResp.Devices = cdiPkg.CreateCdiDeviceSpecs(container.DevicesIDs)
+			containerResp.Mounts = rs.resourcePool.GetMounts(container.DevicesIDs)
 		} else {
 			containerResp.Devices = rs.resourcePool.GetDeviceSpecs(container.DevicesIDs)
 			containerResp.Mounts = rs.resourcePool.GetMounts(container.DevicesIDs)
@@ -176,11 +178,6 @@ func (rs *resourceServer) ListAndWatch(empty *pluginapi.Empty, stream pluginapi.
 		devs = append(devs, dev)
 	}
 	resp.Devices = devs
-	err := rs.updateCDISpec()
-	if err != nil {
-		glog.Errorf("can't update CDI specs: %v", err)
-		return err
-	}
 	glog.Infof("%s: send devices %v\n", methodID, resp)
 	if err := stream.Send(resp); err != nil {
 		glog.Errorf("%s: error: cannot update device states: %v\n", methodID, err)
@@ -203,10 +200,6 @@ func (rs *resourceServer) ListAndWatch(empty *pluginapi.Empty, stream pluginapi.
 				newDevs = append(newDevs, dev)
 			}
 			resp.Devices = newDevs
-			if err := rs.updateCDISpec(); err != nil {
-				glog.Errorf("cannot update CDI specs: %v", err)
-				return err
-			}
 			glog.Infof("%s: send updated devices %v", methodID, resp)
 
 			if err := stream.Send(resp); err != nil {
@@ -215,23 +208,6 @@ func (rs *resourceServer) ListAndWatch(empty *pluginapi.Empty, stream pluginapi.
 			}
 		}
 	}
-}
-
-func (rs *resourceServer) updateCDISpec() error {
-	// check if CDI mode is enabled
-	if !rs.useCdi {
-		return nil
-	}
-	prefix := rs.resourceNamePrefix
-	if prefixOverride := rs.resourcePool.GetResourcePrefix(); prefixOverride != "" {
-		prefix = prefixOverride
-	}
-	err := rs.cdi.CreateCDISpecForPool(prefix, rs.resourcePool)
-	if err != nil {
-		glog.Errorf("updateCDISpec(): error creating CDI spec: %v", err)
-		return err
-	}
-	return nil
 }
 
 // TODO: (SchSeba) check if we want to use this function
