@@ -74,10 +74,17 @@ func (rp *rebellionsInfoProvider) GetEnvVal() types.AdditionalInfo {
 
 func (rp *rebellionsInfoProvider) GetMounts() []*pluginapi.Mount {
 	mounts := make([]*pluginapi.Mount, 0)
-	mounts = append(mounts, &pluginapi.Mount{
-		HostPath:      "/usr/local/bin/rbln-stat",
-		ContainerPath: "/usr/bin/rbln-stat",
-		ReadOnly:      true,
-	})
+	mounts = append(mounts,
+		&pluginapi.Mount{
+			HostPath:      "/usr/bin/rbln-stat",
+			ContainerPath: "/usr/bin/rbln-stat",
+			ReadOnly:      true,
+		},
+		&pluginapi.Mount{
+			HostPath:      "/usr/bin/rbln-smi",
+			ContainerPath: "/usr/bin/rbln-smi",
+			ReadOnly:      true,
+		},
+	)
 	return mounts
 }

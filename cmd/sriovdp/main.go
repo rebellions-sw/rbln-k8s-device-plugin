@@ -33,7 +33,7 @@ func flagInit(cp *cliParams) {
 		"JSON device pool config file location")
 	flag.StringVar(&cp.resourcePrefix, "resource-prefix", "intel.com",
 		"resource name prefix used for K8s extended resource")
-	flag.BoolVar(&cp.useCdi, "use-cdi", false,
+	flag.BoolVar(&cp.useCdi, "use-cdi", true,
 		"Use Container Device Interface to expose devices in containers")
 }
 

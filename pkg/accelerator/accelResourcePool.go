@@ -26,6 +26,7 @@ import (
 
 const (
 	accelPoolType    = "net-accel"
+	rblnPoolType     = "npu"
 	rblnDriverName   = "rebellions"
 	containerRsdPath = "/dev/rsd0"
 )
@@ -78,5 +79,5 @@ func (rp *accelResourcePool) GetDeviceSpecs(deviceIDs []string) []*pluginapi.Dev
 
 // GetCDIKind returns device kind for CDI spec
 func (rp *accelResourcePool) GetCDIName() string {
-	return accelPoolType
+	return rblnPoolType
 }
