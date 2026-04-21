@@ -1,5 +1,29 @@
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
 > [!WARNING]
 > This repository is no longer maintained. For the latest code and documentation, see [rbln-sw/k8s-device-plugin](https://github.com/rbln-sw/k8s-device-plugin).
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
 
 # Rebellions Kubernetes Device Plugin
 
